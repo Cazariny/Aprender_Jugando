@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import UsuarioPersonalizado, Producto, ImagenProducto
+from .models import UsuarioPersonalizado, Producto, ImagenProducto, Resena, Carrito, Orden, ItemCarrito
 
 @admin.register(UsuarioPersonalizado)
 class UsuarioPersonalizadoAdmin(UserAdmin):
@@ -63,3 +63,29 @@ class CarritoAdmin(admin.ModelAdmin):
         return obj.total
     total.short_description = 'Total'
 
+class ItemCarritoAdmin(admin.ModelAdmin):
+    list_display = ('id', 'carrito', 'producto', 'cantidad', 'subtotal_calculado')
+    list_filter = ('carrito__usuario', 'producto')
+    search_fields = ('carrito__usuario__username', 'producto__nombre')
+    
+    def subtotal_calculado(self, obj):
+        return f"${obj.subtotal:.2f}"
+    subtotal_calculado.short_description = 'Subtotal'
+
+class OrdenAdmin(admin.ModelAdmin):
+    list_display = (
+        'numero_orden',
+        'usuario',
+        'estado',
+        'metodo_pago',
+        'total',
+        'fecha_creacion',
+        'email_enviado'
+    )
+    list_filter = ('estado', 'metodo_pago', 'fecha_creacion', 'email_enviado')
+    search_fields = ('numero_orden', 'usuario__username', 'usuario__email')
+    readonly_fields = ('fecha_creacion', 'fecha_actualizacion')
+    ordering = ('-fecha_creacion',)
+
+admin.site.register(ItemCarrito, ItemCarritoAdmin)
+admin.site.register(Orden, OrdenAdmin)

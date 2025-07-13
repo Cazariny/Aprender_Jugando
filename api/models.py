@@ -155,3 +155,64 @@ class Carrito(models.Model):
     def total_items(self):
         return sum(item.cantidad for item in self.items.all())
 
+
+class ItemCarrito(models.Model):
+    """Items individuales en el carrito de compras"""
+    carrito = models.ForeignKey(
+        Carrito,
+        on_delete=models.CASCADE,
+        related_name='items'
+    )
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    cantidad = models.PositiveIntegerField(default=1)
+    
+    @property
+    def subtotal(self):
+        if self.carrito.usuario.es_miembro_educativo():
+            descuento = self.producto.descuento_para_miembros / 100
+            precio_con_descuento = self.producto.precio * (1 - descuento)
+            return precio_con_descuento * self.cantidad
+        return self.producto.precio * self.cantidad
+
+class Orden(models.Model):
+    """Órdenes de compra completadas"""
+    OPCIONES_ESTADO = [
+        ('pending', 'Pendiente'),
+        ('processing', 'Procesando'),
+        ('completed', 'Completada'),
+        ('cancelled', 'Cancelada'),
+    ]
+    
+    OPCIONES_METODO_PAGO = [
+        ('credit_card', 'Tarjeta de crédito'),
+        ('debit_card', 'Tarjeta de débito'),
+        ('paypal', 'PayPal'),
+        ('bank_transfer', 'Transferencia bancaria'),
+    ]
+    
+    usuario = models.ForeignKey(
+        UsuarioPersonalizado,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='ordenes'
+    )
+    numero_orden = models.CharField(max_length=20, unique=True)
+    estado = models.CharField(
+        max_length=20,
+        choices=OPCIONES_ESTADO,
+        default='pending'
+    )
+    metodo_pago = models.CharField(
+        max_length=20,
+        choices=OPCIONES_METODO_PAGO
+    )
+    direccion_envio = models.TextField()
+    direccion_facturacion = models.TextField()
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    email_enviado = models.BooleanField(default=False)
+    
+    def _str_(self):
+        return self.numero_orden
+
