@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Inicio - "Aprende Jugando"{% endblock %}
+
+{% block content %}
+<!-- Hero Banner -->
+<section class="hero-banner">
+    <h1 class="hero-title">Juguetes que educan y divierten</h1>
+    <p class="hero-subtitle">Descubre nuestra colección de juguetes educativos para todas las edades</p>
+    <div class="hero-actions">
+        <a href="" class="btn btn-primary hero-btn">Ver Catálogo</a>
+        <a href="" class="btn btn-secondary hero-btn">Conócenos</a>
+    </div>
+</section>
+
+<!-- Quick Access -->
+<section class="quick-access">
+    <a href="" class="quick-card">
+        <div class="quick-icon">⭐</div>
+        <h3>Top 10 Productos</h3>
+        <p>Los más valorados por nuestros clientes</p>
+    </a>
+    <a href="" class="quick-card">
+        <div class="quick-icon">📚</div>
+        <h3>Blog Educativo</h3>
+        <p>Consejos y artículos para padres</p>
+    </a>
+    <a href="" class="quick-card">
+        <div class="quick-icon">🏢</div>
+        <h3>Sobre Nosotros</h3>
+        <p>Nuestra misión y valores</p>
+    </a>
+    <a href="" class="quick-card">
+        <div class="quick-icon">👤</div>
+        <h3>Regístrate</h3>
+        <p>Y obtén beneficios exclusivos</p>
+    </a>
+</section>
+
+<!-- Featured Products -->
+<section>
+    <h2 style="margin-bottom: 20px; font-size: 28px;">Productos Destacados</h2>
+    <div class="product-grid">
+        {% for product in featured_products %}
+        <a href="{% url 'product_detail' product.id %}" class="product-card">
+            <div class="product-image">{{ product.emoji|default:"🧩" }}</div>
+            <div class="product-info">
+                <h3 class="product-name">{{ product.name }}</h3>
+                <div class="product-price">${{ product.price }}</div>
+                <div class="product-rating">
+                    <span class="stars">{{ product.get_stars }}</span>
+                    <span>({{ product.review_count }})</span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
