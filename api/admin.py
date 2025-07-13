@@ -39,3 +39,27 @@ class ImagenProductoAdmin(admin.ModelAdmin):
     list_filter = ('es_principal',)
     search_fields = ('producto__nombre', 'producto__codigo')
     list_editable = ('es_principal', 'orden')
+
+    from django.contrib import admin
+from .models import Resena, Carrito
+
+@admin.register(Resena)
+class ResenaAdmin(admin.ModelAdmin):
+    list_display = ('producto', 'usuario', 'calificacion', 'fecha_creacion', 'fecha_actualizacion')
+    list_filter = ('calificacion', 'fecha_creacion')
+    search_fields = ('producto__nombre', 'usuario__username', 'comentario')
+    readonly_fields = ('fecha_creacion', 'fecha_actualizacion')
+    ordering = ('-fecha_creacion',)
+@admin.register(Carrito)
+class CarritoAdmin(admin.ModelAdmin):
+    list_display = ('usuario', 'fecha_creacion', 'fecha_actualizacion', 'total_items', 'total')
+    readonly_fields = ('fecha_creacion', 'fecha_actualizacion', 'total_items', 'total')
+
+    def total_items(self, obj):
+        return obj.total_items
+    total_items.short_description = 'Total Items'
+
+    def total(self, obj):
+        return obj.total
+    total.short_description = 'Total'
+

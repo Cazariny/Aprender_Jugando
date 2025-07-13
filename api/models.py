@@ -105,3 +105,53 @@ class ImagenProducto(models.Model):
     
     class Meta:
         ordering = ['orden']
+        
+class Resena(models.Model):
+    """Reseñas y calificaciones de productos por usuarios"""
+    OPCIONES_CALIFICACION = [
+        (1, '1 - Muy malo'),
+        (2, '2 - Malo'),
+        (3, '3 - Regular'),
+        (4, '4 - Bueno'),
+        (5, '5 - Excelente'),
+    ]
+    
+    producto = models.ForeignKey(
+        Producto,
+        on_delete=models.CASCADE,
+        related_name='resenas'
+    )
+    usuario = models.ForeignKey(
+        UsuarioPersonalizado,
+        on_delete=models.CASCADE,
+        related_name='resenas'
+    )
+    calificacion = models.PositiveSmallIntegerField(choices=OPCIONES_CALIFICACION)
+    comentario = models.TextField()
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('producto', 'usuario')
+        ordering = ['-fecha_creacion']
+        verbose_name = 'Reseña'
+        verbose_name_plural = 'Reseñas'
+
+class Carrito(models.Model):
+    """Carrito de compras de usuario"""
+    usuario = models.OneToOneField(
+        UsuarioPersonalizado,
+        on_delete=models.CASCADE,
+        related_name='carrito'
+    )
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    
+    @property
+    def total(self):
+        return sum(item.subtotal for item in self.items.all())
+    
+    @property
+    def total_items(self):
+        return sum(item.cantidad for item in self.items.all())
+
