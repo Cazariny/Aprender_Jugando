@@ -216,3 +216,28 @@ class Orden(models.Model):
     def _str_(self):
         return self.numero_orden
 
+class ItemOrden(models.Model):
+    """Items individuales en una orden de compra"""
+    orden = models.ForeignKey(
+        Orden,
+        on_delete=models.CASCADE,
+        related_name='items'
+    )
+    producto = models.ForeignKey(Producto, on_delete=models.PROTECT)
+    cantidad = models.PositiveIntegerField()
+    precio = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    @property
+    def subtotal(self):
+        return self.precio * self.cantidad
+
+class MensajeContacto(models.Model):
+    """Mensajes del formulario de contacto"""
+    nombre = models.CharField(max_length=100)
+    email = models.EmailField()
+    mensaje = models.TextField()
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    esta_respondido = models.BooleanField(default=False)
+    
+    def _str_(self):
+        return f"Mensaje de {self.nombre}"
