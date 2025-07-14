@@ -4,5 +4,4 @@ from api.models import (
 )
 
 def home(request):
-    return render(request, 'pages/home.html')
-
+    return render(request, 'pages/home.html') 
