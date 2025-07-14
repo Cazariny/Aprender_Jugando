@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import UsuarioPersonalizado, Producto, ImagenProducto, Resena, Carrito, Orden, ItemCarrito, ItemOrden, MensajeContacto
+from .models import BlogCategory, BlogPost, UsuarioPersonalizado, Producto, ImagenProducto, Resena, Carrito, Orden, ItemCarrito, ItemOrden, MensajeContacto
 
 @admin.register(UsuarioPersonalizado)
 class UsuarioPersonalizadoAdmin(UserAdmin):
@@ -105,3 +105,17 @@ class MensajeContactoAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'email', 'fecha_creacion', 'esta_respondido')
     list_filter = ('esta_respondido', 'fecha_creacion')
     search_fields = ('nombre', 'email', 'mensaje')
+    
+class AdministrarBlogCategory(admin.ModelAdmin):
+    list_display = ('nombre', 'slug')
+    list_filter = ('nombre', 'slug')
+    search_fields = ('nombre', 'slug')
+admin.site.register(BlogCategory, AdministrarBlogCategory)
+    
+class AdministrarBlogPost(admin.ModelAdmin):
+    list_display = ('titulo', 'slug', 'autor', 'categoria')
+    list_filter = ('titulo', 'autor', 'categoria')
+    search_fields = ('titulo', 'autor', 'categoria')
+admin.site.register(BlogPost, AdministrarBlogPost)
+    
+    
