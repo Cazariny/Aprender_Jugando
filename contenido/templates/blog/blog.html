@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Blog - "Aprende Jugando"{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 10px;">Blog Educativo</h1>
+<p style="margin-bottom: 30px; color: #666;">Consejos y artículos para el desarrollo educativo de tus hijos</p>
+
+<!-- Blog Filters -->
+<div class="nav-selector">
+    <button class="nav-tab {% if not active_category %}active{% endif %}">
+        <a href="{% url 'Blog' %}" style="text-decoration: none; color: inherit;">Todos</a>
+    </button>
+    {% for category in categories %}
+    <button class="nav-tab {% if category.slug == active_category %}active{% endif %}">
+        <a href="{% url 'Blog' %}?category={{ category.slug }}" style="text-decoration: none; color: inherit;">{{ category.name }}</a>
+    </button>
+    {% endfor %}
+</div>
+
+ <!-- Blog Grid -->
+<div class="blog-grid">
+    {% for post in posts %}
+    <a href="{% url 'BlogDetail' post.slug %}" class="blog-card">
+        <div class="blog-image">
+            {% if post.imagen %}
+                <img src="{{  post.imagen.url }}" alt="{{ post.titulo }}" style="width: 100%; height: 100%; object-fit: cover;">
+            {% else %}
+                📚
+            {% endif %}
+        </div>
+        <div class="blog-content">
+            <h3 class="blog-title">{{ post.titulo }}</h3>
+            <p class="blog-excerpt">{{ post.contenido|truncatechars:100 }}</p>
+            <div class="blog-meta">
+                <span>{{ post.fecha_publicacion|date:"d/m/Y" }}</span>
+                <span>{{ post.autor.get_full_name|default:post.autor.username }}</span>
+            </div>
+        </div>
+    </a>
+    {% empty %}
+    <p>No hay artículos disponibles en esta categoría.</p>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<div style="display: flex; justify-content: center; margin: 40px 0;">
+    <div style="display: flex; gap: 10px;">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if active_category %}&category={{ active_category }}{% endif %}" class="btn btn-secondary" style="padding: 10px 15px;">&laquo; Anterior</a>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <a href="?page={{ num }}{% if active_category %}&category={{ active_category }}{% endif %}" class="btn btn-primary" style="padding: 10px 15px;">{{ num }}</a>
+        {% else %}
+        <a href="?page={{ num }}{% if active_category %}&category={{ active_category }}{% endif %}" class="btn btn-secondary" style="padding: 10px 15px;">{{ num }}</a>
+        {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if active_category %}&category={{ active_category }}{% endif %}" class="btn btn-secondary" style="padding: 10px 15px;">Siguiente &raquo;</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

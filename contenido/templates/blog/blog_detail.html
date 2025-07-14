@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ post.titulo }} - "Aprende Jugando"{% endblock %}
+
+{% block content %}
+<article style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 40px;">
+    <div style="text-align: center; margin-bottom: 30px;">
+        {% if post.imagen %}
+        <div style="margin-bottom: 20px;">
+            <img src="{{ post.imagen.url }}" alt="{{ post.titulo }}" style="max-width: 100%; max-height: 400px; border-radius: 8px;">
+        </div>
+        {% endif %}
+        <h1 style="margin-bottom: 10px;">{{ post.titulo }}</h1>
+        <div style="display: flex; justify-content: center; gap: 20px; color: #666;">
+            <span>Publicado: {{ post.fecha_publicacion|date:"d F, Y" }}</span>
+            <span>•</span>
+            <span>Autor: {{ post.autor.get_full_name|default:post.autor.username }}</span>
+            <span>•</span>
+            <span>{{ post.vistas }} vistas</span>
+        </div>
+    </div>
+    
+    <div style="line-height: 1.8; font-size: 16px;">
+        {{ post.contenido|safe }}
+    </div>
+</article>
+
+<!-- Related Posts -->
+{% if related_posts %}
+<div style="margin-bottom: 40px;">
+    <h2 style="margin-bottom: 20px;">Artículos Relacionados</h2>
+    <div class="blog-grid">
+        {% for post in related_posts %}
+        <a href="{% url 'blog_detail' post.slug %}" class="blog-card">
+            <div class="blog-image">
+                {% if post.imagen %}
+                    <img src="{{ post.imagen.url }}" alt="{{ post.titulo }}" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                    📚
+                {% endif %}
+            </div>
+            <div class="blog-content">
+                <h3 class="blog-title">{{ post.titulo }}</h3>
+                <p class="blog-excerpt">{{ post.contenido|truncatechars:100 }}</p>
+                <div class="blog-meta">
+                    <span>{{ post.fecha_publicacion|date:"d/m/Y" }}</span>
+                    <span>{{ post.autor.get_full_name|default:post.autor.username }}</span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Comments Section -->
+<div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+    <h2 style="margin-bottom: 20px;">Comentarios ({{ comments.count }})</h2>
+    
+    {% if user.is_authenticated %}
+    <form method="post" style="margin-bottom: 30px;">
+        {% csrf_token %}
+        <div class="form-group">
+            <label class="form-label">Tu Comentario</label>
+            <textarea class="form-input" name="comment" rows="3" placeholder="Comparte tus pensamientos..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Publicar Comentario</button>
+    </form>
+    {% else %}
+    <p>Por favor <a href="{% url 'login' %}">inicia sesión</a> para dejar un comentario.</p>
+    {% endif %}
+    
+    {% for comment in comments %}
+    <div style="padding: 20px 0; border-bottom: 1px solid #e0e0e0;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+            <div style="font-weight: 600;">{{ comment.user.username }}</div>
+            <div style="color: #666; font-size: 14px;">{{ comment.created_at|date:"d F, Y" }}</div>
+        </div>
+        <p>{{ comment.content }}</p>
+    </div>
+    {% empty %}
+    <p>No hay comentarios aún. Sé el primero en comentar.</p>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -18,9 +18,13 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from contenido import views
+from api import views as views_api
 
 urlpatterns = [
+    path('admin/', admin.site.urls),
     path('', views.home, name='home'),
+    path('blog/', views_api.BlogCategory, name='Blog'),
+    path('blog/<slug:slug>', views_api.BlogDetail, name='BlogDetail'),
 ]
 
 if settings.DEBUG:

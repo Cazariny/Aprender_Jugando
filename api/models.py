@@ -25,15 +25,15 @@ class UsuarioPersonalizado(AbstractUser):
         'auth.Group',
         verbose_name='groups',
         blank=True,
-        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
+        help_text=' El grupo al que pertenece este usuario. El usuario obtendra todos  los permisos que le brinde cada uno de sus grupos.',
         related_name="usuario_personalizado_set",
         related_query_name="usuario_personalizado",
     )
     user_permissions = models.ManyToManyField(
         'auth.Permission',
-        verbose_name='user permissions',
+        verbose_name='user permisos de usuario',
         blank=True,
-        help_text='Specific permissions for this user.',
+        help_text='Permisos especificos para este usuario.',
         related_name="usuario_personalizado_set",
         related_query_name="usuario_personalizado",
     )
@@ -247,7 +247,7 @@ class BlogCategory(models.Model):
     slug = models.SlugField(unique=True)
     
     def __str__(self):
-        return self.name
+        return self.nombre
 
 class BlogPost(models.Model):
     titulo = models.CharField(max_length=200)
@@ -269,9 +269,10 @@ class BlogPost(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     vistas = models.PositiveIntegerField(default=0)
+    solo_miembros = models.BooleanField(default=False)
     
     def __str__(self):
-        return self.title
+        return self.titulo
     
     class Meta:
         ordering = ['-fecha_publicacion']

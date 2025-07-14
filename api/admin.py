@@ -113,7 +113,7 @@ class AdministrarBlogCategory(admin.ModelAdmin):
 admin.site.register(BlogCategory, AdministrarBlogCategory)
     
 class AdministrarBlogPost(admin.ModelAdmin):
-    list_display = ('titulo', 'slug', 'autor', 'categoria')
+    list_display = ('titulo', 'slug', 'autor')
     list_filter = ('titulo', 'autor', 'categoria')
     search_fields = ('titulo', 'autor', 'categoria')
 admin.site.register(BlogPost, AdministrarBlogPost)
