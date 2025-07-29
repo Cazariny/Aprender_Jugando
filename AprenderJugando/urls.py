@@ -23,6 +23,7 @@ from api import views as views_api
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
+    path('acerca/', views.about, name='acerca'),
     path('blog/', views_api.BlogCategory, name='Blog'),
     path('blog/<slug:slug>', views_api.BlogDetail, name='BlogDetail'),
 ]

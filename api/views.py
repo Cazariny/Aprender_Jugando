@@ -6,6 +6,10 @@ from django.db.models import Q
 from django.db.models import F
 from django.shortcuts import render, get_object_or_404
 
+
+def About(request):
+    return render(request, "pages/about.html")
+
 def BlogCategory(request):
     # Obtener todos los posts publicados ordenados por fecha (más recientes primero)
     posts = BlogPost.objects.filter(es_publicado=True).order_by('-fecha_publicacion')
