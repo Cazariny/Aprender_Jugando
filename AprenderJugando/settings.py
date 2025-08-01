@@ -52,6 +52,8 @@ JAZZMIN_SETTINGS = {
     "login_logo": "img/logo.png",
     "login_logo_dark": None,
     "site_icon": "img/logo.png",
+    "custom_css": "custom/logo.css",
+
 }
 
 MIDDLEWARE = [
@@ -137,3 +139,11 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+AUTHENTICATION_BACKENDS = [
+    'api.auth_backends.EmailBackend',  
+    'django.contrib.auth.backends.ModelBackend',
+]
+AUTH_USER_MODEL = 'api.UsuarioPersonalizado'
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = 'home'

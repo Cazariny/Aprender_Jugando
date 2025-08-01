@@ -45,3 +45,9 @@ def BlogDetail(request, slug):
     post.refresh_from_db()  # Actualizar el objeto con el nuevo valor de vistas
     
     return render(request, "blog/blog_detail.html", {'post': post})
+
+def login(request):
+    return render(request, "pages/login.html")
+
+def registro(request):
+    return render(request, "pages/.html")

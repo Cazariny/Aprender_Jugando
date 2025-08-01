@@ -19,6 +19,9 @@ from django.urls import path
 from django.conf import settings
 from contenido import views
 from api import views as views_api
+from contenido.views import registro  
+from contenido.views import login as login_view
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,6 +29,13 @@ urlpatterns = [
     path('acerca/', views.about, name='acerca'),
     path('blog/', views_api.BlogCategory, name='Blog'),
     path('blog/<slug:slug>', views_api.BlogDetail, name='BlogDetail'),
+    path('login/', views.login, name='login'),
+    path('login/', views.login, name='login'),
+    path('accounts/login/', login_view),
+    path('registro/', views.registro, name='registro'),
+    path('logout/', views.logout, name='logout'),
+
+
 ]
 
 if settings.DEBUG:

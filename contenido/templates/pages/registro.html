@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Registrarse - "Aprende Jugando"{% endblock %}
+
+{% block content %}
+<section class="form-section">
+    <div class="form-container">
+        <h1 style="margin-bottom: 10px; text-align: center;">Crear Cuenta</h1>
+        <p style="text-align: center; margin-bottom: 30px; color: #666;">
+            Regístrate para empezar a disfrutar de nuestros productos educativos
+        </p>
+
+        {% if messages %}
+            <ul style="color: red;">
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="POST" action="{% url 'registro' %}">
+            {% csrf_token %}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div class="form-group">
+                    <label class="form-label" for="username">Nombre de Usuario</label>
+                    <input type="text" id="username" name="username" class="form-input" placeholder="Ej: juanperez" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">Correo Electrónico</label>
+                    <input type="email" id="email" name="email" class="form-input" placeholder="tu@email.com" required>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div class="form-group">
+                    <label class="form-label" for="first_name">Nombre</label>
+                    <input type="text" id="first_name" name="first_name" class="form-input" placeholder="Juan" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="last_name">Apellido</label>
+                    <input type="text" id="last_name" name="last_name" class="form-input" placeholder="Pérez" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password1">Contraseña</label>
+                <input type="password" id="password1" name="password1" class="form-input" placeholder="••••••••" required>
+                <p style="font-size: 14px; color: #666; margin-top: 5px;">Mínimo 8 caracteres</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password2">Confirmar Contraseña</label>
+                <input type="password" id="password2" name="password2" class="form-input" placeholder="••••••••" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Tipo de Cuenta</label>
+                <div style="display: flex; gap: 20px; margin-top: 10px;">
+                    <div style="flex: 1;">
+                        <input type="radio" id="standard" name="tipo" value="estandar" checked>
+                        <label for="standard" style="display: block; padding: 15px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;">
+                            <div style="font-weight: 600; margin-bottom: 5px;">Usuario Estándar</div>
+                            <div style="font-size: 14px; color: #666;">Para padres y estudiantes</div>
+                        </label>
+                    </div>
+                    <div style="flex: 1;">
+                        <input type="radio" id="teacher" name="tipo" value="docente">
+                        <label for="teacher" style="display: block; padding: 15px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;">
+                            <div style="font-weight: 600; margin-bottom: 5px;">Docente/Institución</div>
+                            <div style="font-size: 14px; color: #666;">Acceso a descuentos especiales</div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 20px;">
+                <input type="checkbox" id="terms" required>
+                <label for="terms">Acepto los <a href="#" style="color: #667eea; text-decoration: none;">Términos y Condiciones</a> y la <a href="#" style="color: #667eea; text-decoration: none;">Política de Privacidad</a></label>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 18px; margin: 25px 0 20px;">
+                Registrarme
+            </button>
+
+            <div style="text-align: center;">
+                <p style="color: #666;">¿Ya tienes una cuenta?
+                    <a href="{% url 'login' %}" style="color: #667eea; text-decoration: none;">Inicia sesión</a>
+                </p>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
