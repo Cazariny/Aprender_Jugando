@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% block title %}Catálogo - "Aprende Jugando"{% endblock %}
+
+{% block content %}
+<div class="catalog-container">
+    <h1 class="catalog-title">Nuestro Catálogo</h1>
+    
+    <div class="catalog-layout">
+        <!-- Filters Sidebar -->
+        <aside class="filters-sidebar">
+            <h2>Filtrar por</h2>
+            
+            <form method="get" action="{% url 'catalogo' %}">
+                <div class="filter-group">
+                    <h3 class="filter-title">Edad</h3>
+                    {% for age in age_ranges %}
+                    <div class="filter-option">
+                        <input type="checkbox" id="age{{ forloop.counter }}" name="edad" value="{{ age }}">
+                        <label for="age{{ forloop.counter }}">{{ age }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="filter-group">
+                    <h3 class="filter-title">Tipo de Aprendizaje</h3>
+                    {% for tipo in tipos_aprendizaje %}
+                    <div class="filter-option">
+                        <input type="checkbox" id="type{{ forloop.counter }}" name="tipo" value="{{ tipo.0 }}">
+                        <label for="type{{ forloop.counter }}">{{ tipo.1 }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="filter-group">
+                    <h3 class="filter-title">Precio</h3>
+                    <div class="filter-option">
+                        <input type="checkbox" id="price1" name="precio" value="0-20">
+                        <label for="price1">Menos de $20</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="checkbox" id="price2" name="precio" value="20-40">
+                        <label for="price2">$20 - $40</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="checkbox" id="price3" name="precio" value="40-1000">
+                        <label for="price3">Más de $40</label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 20px;">Aplicar Filtros</button>
+                <a href="{% url 'catalogo' %}" class="btn btn-secondary" style="width: 100%; margin-top: 10px;">Limpiar Filtros</a>
+            </form>
+        </aside>
+        
+        <!-- Product Grid -->
+        <main class="product-grid">
+            {% for producto in productos %}
+            <div class="product-card">
+                <a href="{% url 'detalle_producto' producto.id %}">
+                    {% if producto.imagenes.first %}
+                    <img src="{{ producto.imagenes.first.imagen.url }}" alt="{{ producto.nombre }}" class="product-image">
+                    {% else %}
+                    <div class="product-image-placeholder">🛍️</div>
+                    {% endif %}
+                    <div class="product-info">
+                        <h3 class="product-name">{{ producto.nombre }}</h3>
+                        <div class="product-price">
+                            {% if request.user.es_miembro_educativo %}
+                            <span class="original-price">${{ producto.precio }}</span>
+                            <span>${{ producto.precio_con_descuento|floatformat:2 }}</span>
+                            {% else %}
+                            <span>${{ producto.precio }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="product-rating">
+                            {% with producto.promedio_calificacion as rating %}
+                            <span class="stars">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= rating %}★{% else %}☆{% endif %}
+                                {% endfor %}
+                            </span>
+                            <span>({{ producto.resenas.count }})</span>
+                            {% endwith %}
+                        </div>
+                    </div>
+                </a>
+                <form action="{% url 'agregar_al_carrito' producto.id %}" method="post" class="add-to-cart-form">
+                    {% csrf_token %}
+                    <input type="number" name="cantidad" value="1" min="1" max="10" class="quantity-input">
+                    <button type="submit" class="btn btn-primary">Añadir</button>
+                </form>
+            </div>
+            {% empty %}
+            <div class="no-products">
+                <p>No se encontraron productos con los filtros seleccionados.</p>
+            </div>
+            {% endfor %}
+        </main>
+    </div>
+    
+    <!-- Pagination -->
+    {% if productos.has_other_pages %}
+    <div class="pagination">
+        {% if productos.has_previous %}
+        <a href="?page={{ productos.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">&laquo;</a>
+        {% endif %}
+        
+        {% for i in productos.paginator.page_range %}
+        {% if productos.number == i %}
+        <span class="current-page">{{ i }}</span>
+        {% else %}
+        <a href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">{{ i }}</a>
+        {% endif %}
+        {% endfor %}
+        
+        {% if productos.has_next %}
+        <a href="?page={{ productos.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">&raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

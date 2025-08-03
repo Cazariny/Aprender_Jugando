@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from django.views.generic import DetailView
 from django.db.models import F
-from .models import BlogPost, BlogCategory
+from .models import BlogPost, BlogCategory, Producto, Carrito, ItemCarrito
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
 from django.db.models import F
 from django.shortcuts import render, get_object_or_404
@@ -51,3 +52,85 @@ def login(request):
 
 def registro(request):
     return render(request, "pages/.html")
+
+
+def catalogo(request):
+    productos = Producto.objects.filter(esta_activo=True)
+    
+    # Filtros
+    edad = request.GET.getlist('edad')
+    tipo_aprendizaje = request.GET.getlist('tipo')
+    precio = request.GET.get('precio')
+    
+    if edad:
+        edad_query = Q()
+        for rango in edad:
+            if '-' in rango:
+                min_age, max_age = map(int, rango.split('-'))
+                edad_query |= Q(edad_recomendada__contains=f"{min_age}-{max_age}")
+            else:
+                edad_query |= Q(edad_recomendada__contains=rango)
+        productos = productos.filter(edad_query)
+    
+    if tipo_aprendizaje:
+        productos = productos.filter(tipo_aprendizaje__in=tipo_aprendizaje)
+    
+    if precio:
+        min_price, max_price = map(float, precio.split('-'))
+        productos = productos.filter(precio__gte=min_price, precio__lte=max_price)
+    
+    # Paginación
+    page = request.GET.get('page', 1)
+    paginator = Paginator(productos, 12)  # 12 productos por página
+    
+    try:
+        productos_paginados = paginator.page(page)
+    except PageNotAnInteger:
+        productos_paginados = paginator.page(1)
+    except EmptyPage:
+        productos_paginados = paginator.page(paginator.num_pages)
+    
+    context = {
+        'productos': productos_paginados,
+        'age_ranges': ['1-3', '3-6', '6-9', '9-12'],
+        'tipos_aprendizaje': Producto.OPCIONES_TIPO_APRENDIZAJE,
+    }
+    return render(request, 'products/catalogo.html', context)
+
+def detalle_producto(request, producto_id):
+    producto = get_object_or_404(Producto, id=producto_id, esta_activo=True)
+    
+    # Calcular precio con descuento si es miembro educativo
+    precio_con_descuento = None
+    if request.user.is_authenticated and request.user.es_miembro_educativo():
+        descuento = producto.descuento_para_miembros / 100
+        precio_con_descuento = producto.precio * (1 - descuento)
+    
+    context = {
+        'producto': producto,
+        'precio_con_descuento': precio_con_descuento,
+        'resenas': producto.resenas.all().order_by('-fecha_creacion'),
+    }
+    return render(request, 'products/producto.html', context)
+
+def agregar_al_carrito(request, producto_id):
+    if request.method == 'POST':
+        producto = get_object_or_404(Producto, id=producto_id)
+        cantidad = int(request.POST.get('cantidad', 1))
+        
+        # Obtener o crear el carrito del usuario
+        carrito, created = Carrito.objects.get_or_create(usuario=request.user)
+        
+        # Agregar o actualizar el item en el carrito
+        item, item_created = ItemCarrito.objects.get_or_create(
+            carrito=carrito,
+            producto=producto,
+            defaults={'cantidad': cantidad}
+        )
+        
+        if not item_created:
+            item.cantidad += cantidad
+            item.save()
+        
+       # return redirect('carrito')
+    
