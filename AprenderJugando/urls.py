@@ -20,7 +20,7 @@ from django.conf import settings
 from contenido import views
 from api import views as views_api
 from contenido.views import registro  
-from contenido.views import login as login_view
+from api import views as api_views  
 
 
 urlpatterns = [
@@ -29,11 +29,9 @@ urlpatterns = [
     path('acerca/', views.about, name='acerca'),
     path('blog/', views_api.BlogCategory, name='Blog'),
     path('blog/<slug:slug>', views_api.BlogDetail, name='BlogDetail'),
-    path('login/', views.login, name='login'),
-    path('login/', views.login, name='login'),
-    path('accounts/login/', login_view),
-    path('registro/', views.registro, name='registro'),
-    path('logout/', views.logout, name='logout'),
+     path('login/', api_views.login, name='login'),       
+    path('logout/', api_views.logout_view, name='logout'), 
+    path('registro/', api_views.registro, name='registro'), 
     path('catalogo/', views_api.catalogo, name='catalogo'),
     path('producto/<int:producto_id>/', views_api.detalle_producto, name='detalle_producto'),
     path('agregar-al-carrito/<int:producto_id>/', views_api.agregar_al_carrito, name='agregar_al_carrito'),
