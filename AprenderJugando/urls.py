@@ -35,9 +35,7 @@ urlpatterns = [
     path('catalogo/', views_api.catalogo, name='catalogo'),
     path('producto/<int:producto_id>/', views_api.detalle_producto, name='detalle_producto'),
     path('agregar-al-carrito/<int:producto_id>/', views_api.agregar_al_carrito, name='agregar_al_carrito'),
-
-
-
+    path('carrito/', views_api.vista_carrito, name='carrito'),
 ]
 
 if settings.DEBUG:

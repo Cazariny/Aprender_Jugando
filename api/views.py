@@ -1,6 +1,6 @@
 from django.views.generic import DetailView
 from django.db.models import F
-from .models import BlogPost, BlogCategory, Producto, Carrito, ItemCarrito
+from .models import BlogPost, BlogCategory, Producto, Carrito, ItemCarrito, Carrito
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
 from django.db.models import F
@@ -211,5 +211,32 @@ def agregar_al_carrito(request, producto_id):
             item.save()
         
        # return redirect('carrito')
+
+
+@login_required
+def vista_carrito(request):
+    try:
+        carrito = Carrito.objects.get(usuario=request.user)
+        items = ItemCarrito.objects.filter(carrito=carrito).select_related('producto')
+    except Carrito.DoesNotExist:
+        carrito = None
+        items = []
+
+    # Opcional: calcular subtotal por item
+    for item in items:
+        item.subtotal = item.producto.precio * item.cantidad
+
+    # Opcional: totales del carrito
+    if carrito:
+        carrito.subtotal = sum(item.subtotal for item in items)
+        carrito.envio = 5.99
+        # No asignar carrito.total
+
+    return render(request, 'carrito/carrito.html', {
+        'carrito': carrito,
+        'items': items
+    })
+
+
     
 
