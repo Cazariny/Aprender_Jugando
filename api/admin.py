@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import BlogCategory, BlogPost, UsuarioPersonalizado, Producto, ImagenProducto, Resena, Carrito, Orden, ItemCarrito, ItemOrden, MensajeContacto
-
+from .models import BlogCategory, BlogPost, UsuarioPersonalizado, Producto,ImagenProducto,Resena, Carrito, Orden, ItemCarrito, ItemOrden, MensajeContacto
+from django.db import IntegrityError
 @admin.register(UsuarioPersonalizado)
 class UsuarioPersonalizadoAdmin(UserAdmin):
     list_display = ('username', 'email', 'first_name', 'last_name', 'tipo_membresia', 'esta_verificado', 'is_staff')
@@ -16,7 +16,8 @@ class UsuarioPersonalizadoAdmin(UserAdmin):
 
 @admin.register(Producto)
 class ProductoAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'codigo', 'material', 'edad_recomendada', 'precio', 'stock', 'esta_activo', 'fecha_creacion', 'descuento_para_miembros')
+    list_display = ('nombre', 'codigo', 'material', 'edad_recomendada', 'precio', 'stock', 
+                   'esta_activo', 'fecha_creacion', 'descuento_para_miembros')
     list_filter = ('material', 'tipo_aprendizaje', 'esta_activo')
     search_fields = ('nombre', 'codigo', 'descripcion')
     list_editable = ('precio', 'stock', 'esta_activo', 'descuento_para_miembros')
@@ -32,6 +33,30 @@ class ProductoAdmin(admin.ModelAdmin):
             'fields': ('precio', 'descuento_para_miembros', 'stock')
         }),
     )
+    def save_model(self, request, obj, form, change):
+        """
+        Completely defensive save handling with transaction management
+        """
+        from django.db import transaction
+        try:
+            with transaction.atomic():
+                # First save the basic product
+                obj.save()
+                
+                # Then handle many-to-many if they exist
+                if hasattr(form, 'save_m2m'):
+                    form.save_m2m()
+                    
+        except IntegrityError as e:
+            if 'FOREIGN KEY' in str(e):
+                # Emergency fallback - save with force_insert
+                obj.save(force_insert=True)
+                if hasattr(form, 'save_m2m'):
+                    form.save_m2m()
+            else:
+                raise
+    
+    
 
 @admin.register(ImagenProducto)
 class ImagenProductoAdmin(admin.ModelAdmin):

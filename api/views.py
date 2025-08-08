@@ -131,6 +131,7 @@ def registro(request):
             return redirect('registro')
 
     return render(request, 'usuarios/registro.html')
+
 def catalogo(request):
     productos = Producto.objects.filter(esta_activo=True)
     

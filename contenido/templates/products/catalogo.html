@@ -60,7 +60,7 @@
             <div class="product-card">
                 <a href="{% url 'detalle_producto' producto.id %}">
                     {% if producto.imagenes.first %}
-                    <img src="{{ producto.imagenes.first.imagen.url }}" alt="{{ producto.nombre }}" class="product-image">
+                    <img src="{{ producto.imagenes.first.imagen.url }}" alt="{{ producto.nombre }}" class="product-image" width="200px" height="200px">
                     {% else %}
                     <div class="product-image-placeholder">🛍️</div>
                     {% endif %}

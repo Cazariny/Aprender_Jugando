@@ -80,7 +80,6 @@ class Producto(models.Model):
         default=0,
         help_text="Porcentaje de descuento para miembros educativos"
     )
-    
     def promedio_calificacion(self):
         from django.db.models import Avg
         return self.resenas.aggregate(Avg('calificacion'))['calificacion__avg'] or 0
@@ -107,7 +106,6 @@ class ImagenProducto(models.Model):
         ordering = ['orden']
         
 class Resena(models.Model):
-    """Reseñas y calificaciones de productos por usuarios"""
     OPCIONES_CALIFICACION = [
         (1, '1 - Muy malo'),
         (2, '2 - Malo'),
@@ -119,7 +117,9 @@ class Resena(models.Model):
     producto = models.ForeignKey(
         Producto,
         on_delete=models.CASCADE,
-        related_name='resenas'
+        related_name='resenas',
+        null=True,  # Temporarily allow null for debugging
+        blank=True
     )
     usuario = models.ForeignKey(
         UsuarioPersonalizado,
