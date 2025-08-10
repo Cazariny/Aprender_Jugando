@@ -1,6 +1,6 @@
 from django.views.generic import DetailView
 from django.db.models import F
-from .models import BlogPost, BlogCategory, Producto, Carrito, ItemCarrito, Carrito
+from .models import BlogPost, BlogCategory, Producto, Carrito, ItemCarrito, Carrito, Resena
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
 from django.db.models import F
@@ -177,6 +177,23 @@ def catalogo(request):
 
 def detalle_producto(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id, esta_activo=True)
+    
+    # Manejar el envío de reseñas
+    if request.method == 'POST' and request.user.is_authenticated:
+        form_data = request.POST
+        calificacion = form_data.get('calificacion')
+        comentario = form_data.get('comentario')
+        
+        # Validar que el usuario no haya dejado ya una reseña para este producto
+        if not Resena.objects.filter(producto=producto, usuario=request.user).exists():
+            Resena.objects.create(
+                producto=producto,
+                usuario=request.user,
+                calificacion=calificacion,
+                comentario=comentario
+            )
+        else:
+            messages.warning(request, 'Ya has enviado una reseña para este producto.')
     
     # Calcular precio con descuento si es miembro educativo
     precio_con_descuento = None

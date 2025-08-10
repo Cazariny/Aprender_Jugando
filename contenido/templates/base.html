@@ -6,7 +6,9 @@
     <title>{% block title %}"Aprende Jugando" - Juguetes Educativos{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+    
     {% block extra_css %}{% endblock %}
+    
 </head>
 <body>
     {% if messages %}
@@ -24,7 +26,7 @@
     </div>
 
     {% include 'partials/_footer.html' %}
-    
+    <script src="{% static 'js/estilos.js' %}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

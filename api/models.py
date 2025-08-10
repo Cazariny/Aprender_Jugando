@@ -117,10 +117,8 @@ class Resena(models.Model):
     producto = models.ForeignKey(
         Producto,
         on_delete=models.CASCADE,
-        related_name='resenas',
-        null=True,  # Temporarily allow null for debugging
-        blank=True
-    )
+        related_name='resenas'
+    )  # Eliminé null=True ya que no debería ser necesario
     usuario = models.ForeignKey(
         UsuarioPersonalizado,
         on_delete=models.CASCADE,
@@ -136,6 +134,9 @@ class Resena(models.Model):
         ordering = ['-fecha_creacion']
         verbose_name = 'Reseña'
         verbose_name_plural = 'Reseñas'
+    
+    def __str__(self):
+        return f"Reseña de {self.usuario.username} para {self.producto.nombre}"
 
 class Carrito(models.Model):
     """Carrito de compras de usuario"""

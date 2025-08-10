@@ -78,56 +78,74 @@
         </div>
     </div>
     
-    <!-- Reviews Section -->
-    <div class="reviews-section">
-        <h2>Opiniones de Clientes</h2>
-        
-        {% if request.user.is_authenticated %}
-        <!-- Review Form -->
-        <div class="review-form">
-            <h3>Escribe tu Opinión</h3>
-                {% csrf_token %}
-                <div class="form-group">
-                    <label>Calificación</label>
-                    <select name="calificacion" required>
-                        <option value="">Selecciona una calificación</option>
-                        <option value="5">5 ★★★★★</option>
-                        <option value="4">4 ★★★★☆</option>
-                        <option value="3">3 ★★★☆☆</option>
-                        <option value="2">2 ★★☆☆☆</option>
-                        <option value="1">1 ★☆☆☆☆</option>
-                    </select>
+        <!-- Reviews Section -->
+        <div class="reviews-section">
+            <h2 style="margin-bottom: 20px;">Opiniones de Clientes</h2>
+            
+                {% if request.user.is_authenticated %}
+                <!-- Mensajes de alerta -->
+                {% if messages %}
+                <div class="messages-container">
+                    {% for message in messages %}
+                    <div class="alert-resena alert-{{ message.tags }}">
+                        {{ message }}
+                        <button class="close-alert">&times;</button>
+                    </div>
+                    {% endfor %}
                 </div>
-                <div class="form-group">
-                    <label>Comentario</label>
-                    <textarea name="comentario" rows="4" required></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Enviar Reseña</button>
-            </form>
-        </div>
-        {% endif %}
-        
-        <!-- Existing Reviews -->
-        <div class="reviews-list">
+                {% endif %}
+            <!-- Review Form -->
+            <div class="review-card" style="background: #f0f7ff;">
+                <h3 style="margin-bottom: 15px;">Escribe tu Opinión</h3>
+                <form method="POST" action="{% url 'detalle_producto' producto.id %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label class="form-label">Calificación</label>
+                        <select name="calificacion" class="form-input" required>
+                            <option value="">Selecciona una calificación</option>
+                            <option value="5">5 ★★★★★</option>
+                            <option value="4">4 ★★★★☆</option>
+                            <option value="3">3 ★★★☆☆</option>
+                            <option value="2">2 ★★☆☆☆</option>
+                            <option value="1">1 ★☆☆☆☆</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tu Opinión</label>
+                        <textarea name="comentario" class="form-input" rows="4" required placeholder="Comparte tu experiencia..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Enviar Reseña</button>
+                </form>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary">Inicia sesión</a> para dejar una reseña
+            </div>
+            {% endif %}
+            
+            <!-- Existing Reviews -->
             {% for resena in resenas %}
             <div class="review-card">
                 <div class="review-header">
                     <div class="review-author">{{ resena.usuario.username }}</div>
-                    <div class="review-date">{{ resena.fecha_creacion|date:"d M, Y" }}</div>
+                    <div class="review-date">{{ resena.fecha_creacion|date:"j F, Y" }}</div>
                 </div>
-                <div class="review-rating">
+                <div class="product-rating" style="margin-bottom: 10px;">
                     <span class="stars">
                         {% for i in "12345" %}
                             {% if forloop.counter <= resena.calificacion %}★{% else %}☆{% endif %}
                         {% endfor %}
                     </span>
                 </div>
-                <p class="review-text">{{ resena.comentario }}</p>
+                <p>{{ resena.comentario }}</p>
             </div>
             {% empty %}
-            <p class="no-reviews">No hay reseñas todavía. Sé el primero en opinar.</p>
+            <div class="review-card">
+                <p>No hay reseñas todavía. Sé el primero en opinar.</p>
+            </div>
             {% endfor %}
         </div>
     </div>
 </div>
+
 {% endblock %}

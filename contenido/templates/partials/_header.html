@@ -2,7 +2,7 @@
     <a href="{% url 'home' %}" class="logo">"Aprende Jugando"</a>
     <nav class="nav-menu">
         <a href="{% url "home" %}" class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">Inicio</a>
-        <a href="" class="nav-item {% if request.resolver_match.url_name == 'catalog' %}active{% endif %}">Catálogo</a>
+        <a href="{% url "catalogo" %}" class="nav-item {% if request.resolver_match.url_name == 'catalog' %}active{% endif %}">Catálogo</a>
         <a href="{% url "Blog" %}" class="nav-item {% if request.resolver_match.url_name == 'blog' %}active{% endif %}">Blog</a>
         <a href="{% url "acerca" %}" class="nav-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">Nosotros</a>
     </nav>
