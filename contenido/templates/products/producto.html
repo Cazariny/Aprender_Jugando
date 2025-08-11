@@ -67,13 +67,10 @@
                 </div>
             </div>
             
-            <form action="{% url 'agregar_al_carrito' producto.id %}" method="post" class="add-to-cart-form">
+            <form method="POST" action="{% url 'agregar_al_carrito' producto.id %}">
                 {% csrf_token %}
-                <div class="quantity-selector">
-                    <label for="cantidad">Cantidad:</label>
-                    <input type="number" id="cantidad" name="cantidad" value="1" min="1" max="{{ producto.stock }}">
-                </div>
-                <button type="submit" class="btn btn-primary">Añadir al Carrito</button>
+                <input type="hidden" name="cantidad" value="1">
+                <button type="submit" class="btn btn-primary">Añadir al carrito</button>
             </form>
         </div>
     </div>

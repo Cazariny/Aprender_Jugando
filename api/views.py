@@ -11,6 +11,8 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
+from django.views.decorators.http import require_POST
+
 
 
 
@@ -222,38 +224,51 @@ def agregar_al_carrito(request, producto_id):
             producto=producto,
             defaults={'cantidad': cantidad}
         )
-        
         if not item_created:
             item.cantidad += cantidad
             item.save()
-        
-       # return redirect('carrito')
+        return redirect('detalle_producto', producto_id=producto.id)  
 
 
 @login_required
 def vista_carrito(request):
-    try:
-        carrito = Carrito.objects.get(usuario=request.user)
-        items = ItemCarrito.objects.filter(carrito=carrito).select_related('producto')
-    except Carrito.DoesNotExist:
-        carrito = None
-        items = []
+    usuario = request.user
+    carrito = Carrito.objects.filter(usuario=usuario).first()
 
-    # Opcional: calcular subtotal por item
-    for item in items:
-        item.subtotal = item.producto.precio * item.cantidad
+    if not carrito:
+        return render(request, 'carrito/carrito.html', {
+            'carrito': carrito,
+            'items': [],
+            'subtotal': 0,
+            'envio': 0,
+            'total': 0
+        })
 
-    # Opcional: totales del carrito
-    if carrito:
-        carrito.subtotal = sum(item.subtotal for item in items)
-        carrito.envio = 5.99
-        # No asignar carrito.total
+    items = ItemCarrito.objects.filter(carrito=carrito)
+
+    # 🛒 Cálculo de precios
+    PRECIO_ENVIO = 80
+    subtotal = sum(item.producto.precio * item.cantidad for item in items)
+    envio = PRECIO_ENVIO
+    total = subtotal + envio
 
     return render(request, 'carrito/carrito.html', {
         'carrito': carrito,
-        'items': items
+        'items': items,
+        'subtotal': subtotal,
+        'envio': envio,
+        'total': total
     })
 
 
-    
+
+@login_required
+@require_POST
+def eliminar_del_carrito(request, item_id):
+    item = get_object_or_404(ItemCarrito, id=item_id, carrito__usuario=request.user)
+    print("Eliminando item:", item.id)
+    item.delete()
+    return redirect('carrito')
+
+
 
