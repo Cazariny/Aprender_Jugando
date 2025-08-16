@@ -46,10 +46,17 @@ def BlogCategory(request):
     return render(request, "blog/blog.html", context)
 
 
+
 def BlogDetail(request, slug):
     # Obtener el post publicado o mostrar 404 si no existe o no está publicado
     post = get_object_or_404(BlogPost, slug=slug, es_publicado=True)
-    
+
+    # Verificar si el usuario no es premium
+    if not request.user.is_authenticated or not request.user.tipo_Membresia == 'premium':
+        # Agregar un mensaje y redirigir al blog.
+        messages.info(request, 'Este contenido es solo para miembros premium. Por favor, inicia sesión o actualiza tu membresía para verlo.')
+        return redirect('Blog')
+
     # Incrementar el contador de vistas
     BlogPost.objects.filter(pk=post.pk).update(vistas=F('vistas') + 1)
     post.refresh_from_db()  # Actualizar el objeto con el nuevo valor de vistas
@@ -312,5 +319,6 @@ def checkout(request):
     return render(request, 'carrito/checkout.html', context)
 
 
-
+def membresia(request):
+    return render(request, "membresia/membresia.html")
 

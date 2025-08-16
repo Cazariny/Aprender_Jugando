@@ -4,8 +4,7 @@ from django.db import models
 class UsuarioPersonalizado(AbstractUser):
     OPCIONES_MEMBRESIA = [
         ('regular', 'Usuario regular'),
-        ('teacher', 'Docente'),
-        ('institution', 'Institución educativa'),
+        ('premium', 'Usuario Premium'),
     ]
     
     tipo_membresia = models.CharField(
