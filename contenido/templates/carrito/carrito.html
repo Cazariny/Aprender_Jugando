@@ -19,14 +19,28 @@
             <tr>
                 <td>
                     <div style="display: flex; align-items: center; gap: 15px;">
-                        <div style="width: 60px; height: 60px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
-                            {{ item.producto.icono|default:"🎲" }}
-                        </div>
-                        <div>
-                            <div style="font-weight: 600;">{{ item.producto.nombre }}</div>
-                            <div style="font-size: 14px; color: #666;">Código: {{ item.producto.codigo }}</div>
-                        </div>
-                    </div>
+    <!-- Contenedor de la imagen -->
+    <div style="width: 60px; height: 60px; border-radius: 8px; overflow: hidden; background: #f0f0f0;">
+        {% with item.producto.imagenes.all|first as imagen_principal %}
+            {% if imagen_principal %}
+                <img 
+                    src="{{ imagen_principal.imagen.url }}" 
+                    alt="{{ item.producto.nombre }}"
+                    style="width: 100%; height: 100%; object-fit: cover;"
+                >
+            {% else %}
+                <!-- Fallback si no hay imágenes -->
+                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                    {{ item.producto.icono|default:"🎲" }}
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+    <div>
+        <div style="font-weight: 600;">{{ item.producto.nombre }}</div>
+        <div style="font-size: 14px; color: #666;">Código: {{ item.producto.codigo }}</div>
+    </div>
+</div>
                 </td>
                 <td>${{ item.producto.precio }}</td>
                 <td>
@@ -43,6 +57,7 @@
             {% empty %}
             <tr><td colspan="5">Tu carrito está vacío.</td></tr>
             {% endfor %}
+            
             {% block scripts %}
             <script>
             document.addEventListener('DOMContentLoaded', function () {
@@ -95,6 +110,7 @@
 
         <div style="display: flex; justify-content: space-between; margin-top: 30px;">
             <a href="{% url 'catalogo' %}" class="btn btn-secondary">Seguir Comprando</a>
+            <a href="{% url 'checkout' %}" class="btn btn-primary">Proceder al Pago</a>
         </div>
     </div>
 </div>

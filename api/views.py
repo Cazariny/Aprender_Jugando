@@ -271,4 +271,46 @@ def eliminar_del_carrito(request, item_id):
     return redirect('carrito')
 
 
+@login_required
+def checkout(request):
+    # Obtener el carrito de la sesión
+    carrito = request.session.get('carrito/carrito.hmtl', {})
+    
+    # Preparar los items para el template
+    items = []
+    subtotal = 0
+    
+    for producto_id, item_data in carrito.items():
+        try:
+            producto = Producto.objects.get(id=producto_id)
+            cantidad = item_data['cantidad']
+            precio_unitario = producto.precio
+            subtotal_item = precio_unitario * cantidad
+            
+            items.append({
+                'producto': producto,
+                'cantidad': cantidad,
+                'precio_unitario': precio_unitario,
+                'subtotal': subtotal_item
+            })
+            
+            subtotal += subtotal_item
+        except Producto.DoesNotExist:
+            continue
+    
+    # Calcular envío (ejemplo: 5% del subtotal con mínimo $5)
+    envio = max(subtotal * 0.05, 5)
+    total = subtotal + envio
+    
+    context = {
+        'items': items,
+        'subtotal': subtotal,
+        'envio': envio,
+        'total': total
+    }
+    
+    return render(request, 'carrito/checkout.html', context)
+
+
+
 

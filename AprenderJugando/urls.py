@@ -37,6 +37,7 @@ urlpatterns = [
     path('agregar-al-carrito/<int:producto_id>/', views_api.agregar_al_carrito, name='agregar_al_carrito'),
     path('carrito/', views_api.vista_carrito, name='carrito'),
     path('carrito/eliminar/<int:item_id>/', views_api.eliminar_del_carrito, name='eliminar_del_carrito'),
+    path('checkout/', views_api.checkout, name='checkout'),
 ]
 
 if settings.DEBUG:
