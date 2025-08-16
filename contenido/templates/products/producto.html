@@ -8,18 +8,18 @@
     <div class="product-detail">
         <!-- Product Image -->
         <div class="product-images">
-            <div class="main-image">
+            <div class="main-image product-image-container">
                 {% if producto.imagenes.first %}
-                <img src="{{ producto.imagenes.first.imagen.url }}" alt="{{ producto.nombre }}" width="200px">
+                <img src="{{ producto.imagenes.first.imagen.url }}" alt="{{ producto.nombre }}" class="product-image">
                 {% else %}
-                <div class="image-placeholder">🛍️</div>
+                <div class="product-image-placeholder">🛍️</div>
                 {% endif %}
             </div>
             <div class="thumbnail-images">
                 {% for imagen in producto.imagenes.all %}
-                <img src="{{ imagen.imagen.url }}" alt="{{ producto.nombre }}" class="{% if forloop.first %}active{% endif %}">
+                <img src="{{ imagen.imagen.url }}" alt="{{ producto.nombre }}" class="product-thumbnail {% if forloop.first %}active{% endif %}">
                 {% endfor %}
-            </div>
+            </div>            
         </div>
         
         <!-- Product Details -->

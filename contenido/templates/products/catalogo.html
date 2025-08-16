@@ -58,43 +58,45 @@
         <main class="product-grid">
             {% for producto in productos %}
             <div class="product-card">
-                <a href="{% url 'detalle_producto' producto.id %}">
-                    {% if producto.imagenes.first %}
-                    <img src="{{ producto.imagenes.first.imagen.url }}" alt="{{ producto.nombre }}" class="product-image" width="200px" height="200px">
-                    {% else %}
-                    <div class="product-image-placeholder">🛍️</div>
-                    {% endif %}
+                <a href="{% url 'detalle_producto' producto.id %}" style="text-decoration: none; color: inherit;">
+                    <div class="product-image-container">
+                        {% if producto.imagenes.first %}
+                        <img src="{{ producto.imagenes.first.imagen.url }}" alt="{{ producto.nombre }}" class="product-image">
+                        {% else %}
+                        <div class="product-image-placeholder">🛍️</div>
+                        {% endif %}
+                    </div>
                     <div class="product-info">
-                        <h3 class="product-name">{{ producto.nombre }}</h3>
-                        <div class="product-price">
+                        <h3 class="product-name" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-weight: 600; margin-bottom: 8px;">{{ producto.nombre }}</h3>
+                        <div class="product-price" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 1.1rem;">
                             {% if request.user.es_miembro_educativo %}
-                            <span class="original-price">${{ producto.precio }}</span>
-                            <span>${{ producto.precio_con_descuento|floatformat:2 }}</span>
+                            <span class="original-price" style="text-decoration: line-through; color: #95a5a6; margin-right: 5px;">${{ producto.precio }}</span>
+                            <span style="color: #e74c3c; font-weight: bold;">${{ producto.precio_con_descuento|floatformat:2 }}</span>
                             {% else %}
-                            <span>${{ producto.precio }}</span>
+                            <span style="color: #e74c3c; font-weight: bold;">${{ producto.precio }}</span>
                             {% endif %}
                         </div>
-                        <div class="product-rating">
+                        <div class="product-rating" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
                             {% with producto.promedio_calificacion as rating %}
-                            <span class="stars">
+                            <span class="stars" style="color: #f39c12; letter-spacing: 2px;">
                                 {% for i in "12345" %}
                                     {% if forloop.counter <= rating %}★{% else %}☆{% endif %}
                                 {% endfor %}
                             </span>
-                            <span>({{ producto.resenas.count }})</span>
+                            <span style="color: #7f8c8d; font-size: 0.9rem;">({{ producto.resenas.count }})</span>
                             {% endwith %}
                         </div>
                     </div>
                 </a>
                 <form action="{% url 'agregar_al_carrito' producto.id %}" method="post" class="add-to-cart-form">
                     {% csrf_token %}
-                    <input type="number" name="cantidad" value="1" min="1" max="10" class="quantity-input">
-                    <button type="submit" class="btn btn-primary">Añadir</button>
+                    <input type="number" name="cantidad" value="1" min="1" max="10" class="quantity-input" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                    <button type="submit" class="btn btn-primary" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">Añadir</button>
                 </form>
             </div>
             {% empty %}
             <div class="no-products">
-                <p>No se encontraron productos con los filtros seleccionados.</p>
+                <p style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">No se encontraron productos con los filtros seleccionados.</p>
             </div>
             {% endfor %}
         </main>
@@ -104,21 +106,22 @@
     {% if productos.has_other_pages %}
     <div class="pagination">
         {% if productos.has_previous %}
-        <a href="?page={{ productos.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">&laquo;</a>
+        <a href="?page={{ productos.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link" style="text-decoration: none;">&laquo;</a>
         {% endif %}
         
         {% for i in productos.paginator.page_range %}
         {% if productos.number == i %}
-        <span class="current-page">{{ i }}</span>
+        <span class="current-page" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">{{ i }}</span>
         {% else %}
-        <a href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">{{ i }}</a>
+        <a href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link" style="text-decoration: none; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">{{ i }}</a>
         {% endif %}
         {% endfor %}
         
         {% if productos.has_next %}
-        <a href="?page={{ productos.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link">&raquo;</a>
+        <a href="?page={{ productos.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link" style="text-decoration: none;">&raquo;</a>
         {% endif %}
     </div>
     {% endif %}
 </div>
+
 {% endblock %}
