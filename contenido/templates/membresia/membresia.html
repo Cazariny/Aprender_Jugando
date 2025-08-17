@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Blog - "Aprende Jugando"{% endblock %}
+
+{% block content %}
+<div class="hero-banner" style="margin-bottom: 40px;">
+            <h1 class="hero-title">Membresías Educativas</h1>
+            <p class="hero-subtitle">Acceso exclusivo, descuentos especiales y beneficios para el desarrollo continuo de tus hijos</p>
+        </div>
+
+        <!-- Membership Plans -->
+        <div style="margin-bottom: 50px;">
+            <h2 style="margin-bottom: 20px;">Elige tu Plan Ideal</h2>
+            <p style="margin-bottom: 30px; color: #666;">Nuestras membresías están diseñadas para adaptarse a las necesidades de aprendizaje de tu familia.</p>
+            
+            <div class="quick-access" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="quick-card" style="cursor: default;">
+                    <div class="quick-icon">👶</div>
+                    <h3 style="margin-bottom: 15px;">Básica</h3>
+                    <div style="font-size: 32px; font-weight: bold; color: #667eea; margin-bottom: 15px;">$9.99/mes</div>
+                    <ul style="text-align: left; list-style: none; margin-bottom: 20px;">
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">✓ 10% de descuento en productos</li>
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">✓ Acceso a contenido exclusivo</li>
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">✓ Envío estándar gratuito</li>
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">✓ 1 taller mensual online</li>
+                    </ul>
+                    <button class="btn btn-secondary">Seleccionar</button>
+                </div>
+                
+                <div class="quick-card" style="cursor: default; border: 2px solid #667eea; position: relative;">
+                    <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #667eea; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px;">MÁS POPULAR</div>
+                    <div class="quick-icon">👧</div>
+                    <h3 style="margin-bottom: 15px;">Premium</h3>
+                    <div style="font-size: 32px; font-weight: bold; color: #667eea; margin-bottom: 15px;">$19.99/mes</div>
+                    <ul style="text-align: left; list-style: none; margin-bottom: 20px;">
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">✓ 20% de descuento en productos</li>
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">✓ Acceso completo a contenido exclusivo</li>
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">✓ Envío express gratuito</li>
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">✓ 4 talleres mensuales online</li>
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">✓ Asesoría pedagógica mensual</li>
+                    </ul>
+                    <button class="btn btn-primary">Seleccionar</button>
+                </div>
+                
+                <div class="quick-card" style="cursor: default;">
+                    <div class="quick-icon">👨‍👩‍👧‍👦</div>
+                    <h3 style="margin-bottom: 15px;">Familiar</h3>
+                    <div style="font-size: 32px; font-weight: bold; color: #667eea; margin-bottom: 15px;">$29.99/mes</div>
+                    <ul style="text-align: left; list-style: none; margin-bottom: 20px;">
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">✓ 25% de descuento en productos</li>
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">✓ Acceso completo para toda la familia</li>
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">✓ Envío express gratuito ilimitado</li>
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">✓ Talleres ilimitados</li>
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">✓ Asesoría pedagógica semanal</li>
+                        <li style="margin-bottom: 10px; padding-left: 20px; position: relative;">✓ Kit de bienvenida exclusivo</li>
+                    </ul>
+                    <button class="btn btn-secondary">Seleccionar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Benefits Section -->
+        <div class="about-section" style="margin-bottom: 40px;">
+            <h2 class="about-title">Beneficios Exclusivos</h2>
+            <div class="about-content">
+                <div>
+                    <h3 style="margin-bottom: 15px;">Para tu familia</h3>
+                    <p style="line-height: 1.6; margin-bottom: 20px;">Nuestras membresías están diseñadas para apoyar el desarrollo integral de tus hijos mientras ahorras dinero en productos educativos de calidad.</p>
+                    
+                    <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                        <div style="flex: 1; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                            <div style="font-size: 24px; margin-bottom: 10px;">🎁</div>
+                            <h4 style="margin-bottom: 5px;">Descuentos</h4>
+                            <p style="font-size: 14px; color: #666;">Ahorra entre 10% y 25% en todos nuestros productos.</p>
+                        </div>
+                        <div style="flex: 1; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                            <div style="font-size: 24px; margin-bottom: 10px;">🚚</div>
+                            <h4 style="margin-bottom: 5px;">Envíos Gratis</h4>
+                            <p style="font-size: 14px; color: #666;">Recibe tus pedidos sin costos de envío.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="about-mission">
+                    <h3 style="margin-bottom: 15px;">Para el aprendizaje</h3>
+                    <p style="line-height: 1.6; margin-bottom: 20px;">Accede a contenido educativo exclusivo diseñado por expertos en pedagogía infantil.</p>
+                    
+                    <ul style="list-style: none;">
+                        <li style="margin-bottom: 10px; padding-left: 25px; position: relative;">📚 Guías de aprendizaje por edad</li>
+                        <li style="margin-bottom: 10px; padding-left: 25px; position: relative;">🎥 Videos educativos exclusivos</li>
+                        <li style="margin-bottom: 10px; padding-left: 25px; position: relative;">📝 Material descargable</li>
+                        <li style="margin-bottom: 10px; padding-left: 25px; position: relative;">👩‍🏫 Talleres en vivo con expertos</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mi Perfil - Aprende Jugando{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 40px;">
+    {% if messages %}
+        <ul class="messages">
+        {% for message in messages %}
+            <li style="color: green;">{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div style="display: grid; grid-template-columns: 250px 1fr; gap: 30px;">
+        <!-- Sidebar -->
+        <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); height: fit-content;">
+            <div style="text-align: center; margin-bottom: 25px;">
+                <div style="width: 100px; height: 100px; background: #f0f7ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 15px;">
+                    👤
+                </div>
+                <h3>{{ request.user.get_full_name }}</h3>
+                <p style="color: #667eea; font-size: 14px;">
+                    {% if request.user.tipo_membresia == 'teacher' %}
+                        Docente/Institución
+                    {% else %}
+                        Cuenta Estándar
+                    {% endif %}
+                </p>
+            </div>
+            
+            <nav style="display: flex; flex-direction: column; gap: 10px;">
+                <a href="{% url 'perfil' %}" class="nav-tab active">Resumen</a>
+                <a href="{% url 'mis_pedidos' %}" class="nav-tab">Mis Pedidos</a>
+                <a href="{% url 'mis_resenas' %}" class="nav-tab">Mis Reseñas</a>
+                <a href="{% url 'logout' %}" class="nav-tab">Cerrar Sesión</a>
+            </nav>
+        </div>
+
+        <!-- Contenido principal -->
+        <div>
+            <!-- Resumen -->
+            <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px;">
+                <h2 style="margin-bottom: 20px;">Resumen de la Cuenta</h2>
+                <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+                    <div class="dashboard-card" style="background: #f9fafb; padding: 20px; border-radius: 8px; text-align: center;">
+                        <div class="dashboard-number">{{ pedidos.count }}</div>
+                        <div class="dashboard-label">Pedidos Realizados</div>
+                    </div>
+                   <div class="dashboard-card" style="background: #f9fafb; padding: 20px; border-radius: 8px; text-align: center;">
+                         <div class="dashboard-number">{{ total_reseñas }}</div>
+                                 <div class="dashboard-label">Reseñas Escritas</div>
+                                    </div>
+
+                </div>
+            </div>
+
+            <!-- Información Personal -->
+            <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px;">
+                <h2 style="margin-bottom: 20px;">Información Personal</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                    <div>
+                        <div style="font-weight: 600; color: #4a5568; margin-bottom: 5px;">Nombre</div>
+                        <div>{{ request.user.first_name }}</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: #4a5568; margin-bottom: 5px;">Apellido</div>
+                        <div>{{ request.user.last_name }}</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: #4a5568; margin-bottom: 5px;">Correo Electrónico</div>
+                        <div>{{ request.user.email }}</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; color: #4a5568; margin-bottom: 5px;">Fecha de Registro</div>
+                        <div>{{ request.user.date_joined|date:"d/m/Y" }}</div>
+                    </div>
+                </div>
+                <a href="{% url 'editar_perfil' %}" class="btn btn-secondary">Editar Perfil</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

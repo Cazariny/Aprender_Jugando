@@ -19,8 +19,6 @@ from django.urls import path
 from django.conf import settings
 from contenido import views
 from api import views as views_api
-from contenido.views import registro  
-from api import views as api_views  
 
 
 urlpatterns = [
@@ -29,15 +27,22 @@ urlpatterns = [
     path('acerca/', views.about, name='acerca'),
     path('blog/', views_api.BlogCategory, name='Blog'),
     path('blog/<slug:slug>', views_api.BlogDetail, name='BlogDetail'),
-     path('login/', api_views.login, name='login'),       
-    path('logout/', api_views.logout_view, name='logout'), 
-    path('registro/', api_views.registro, name='registro'), 
+     path('login/', views_api.login, name='login'),       
+    path('logout/', views_api.logout_view, name='logout'), 
+    path('registro/', views_api.registro, name='registro'),
+    path('membresia/', views_api.membresia, name='membresia'),  
     path('catalogo/', views_api.catalogo, name='catalogo'),
     path('producto/<int:producto_id>/', views_api.detalle_producto, name='detalle_producto'),
     path('agregar-al-carrito/<int:producto_id>/', views_api.agregar_al_carrito, name='agregar_al_carrito'),
     path('carrito/', views_api.vista_carrito, name='carrito'),
     path('carrito/eliminar/<int:item_id>/', views_api.eliminar_del_carrito, name='eliminar_del_carrito'),
     path('checkout/', views_api.checkout, name='checkout'),
+    path('perfil/', views_api.perfil, name='perfil'),
+    path('perfil/editar/', views_api.editar_perfil, name='editar_perfil'),
+    path('mis-pedidos/', views_api.mis_pedidos, name='mis_pedidos'),
+    path('mis-resenas/', views_api.mis_resenas, name='mis_resenas'),
+    path('perfil/mis_resenas/', views_api.mis_resenas, name='mis_resenas'),
+    path('configuracion/', views_api.configuracion, name='configuracion'),  
 ]
 
 if settings.DEBUG:

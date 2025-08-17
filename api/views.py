@@ -45,18 +45,24 @@ def BlogCategory(request):
     
     return render(request, "blog/blog.html", context)
 
-
 def BlogDetail(request, slug):
     # Obtener el post publicado o mostrar 404 si no existe o no está publicado
     post = get_object_or_404(BlogPost, slug=slug, es_publicado=True)
-    
+
+    # Verificar si el usuario no es premium
+    if not request.user.is_authenticated or not request.user.tipo_Membresia == 'premium':
+        # Agregar un mensaje y redirigir al blog.
+        messages.info(request, 'Este contenido es solo para miembros premium. Por favor, inicia sesión o actualiza tu membresía para verlo.')
+        return redirect('Blog')
+
     # Incrementar el contador de vistas
     BlogPost.objects.filter(pk=post.pk).update(vistas=F('vistas') + 1)
     post.refresh_from_db()  # Actualizar el objeto con el nuevo valor de vistas
     
     return render(request, "blog/blog_detail.html", {'post': post})
 
-
+def membresia(request):
+    return render(request, "membresia/membresia.html")
 
 def login(request):
     if request.method == 'POST':
@@ -92,7 +98,7 @@ def registro(request):
         last_name = request.POST.get('last_name')
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
-        tipo_form = request.POST.get('tipo')  # 'estandar' o 'docente'
+        tipo_form = request.POST.get('tipo')  
 
         tipo_membresia = 'regular' if tipo_form == 'estandar' else 'teacher'
 
@@ -133,6 +139,55 @@ def registro(request):
             return redirect('registro')
 
     return render(request, 'usuarios/registro.html')
+
+@login_required
+def perfil(request):
+    total_reseñas = Resena.objects.filter(usuario=request.user).count()
+    reseñas_usuario = Resena.objects.filter(usuario=request.user).select_related('producto')
+
+    context = {
+        'total_reseñas': total_reseñas,
+        'reseñas_usuario': reseñas_usuario,
+    }
+    return render(request, 'usuarios/perfil.html', context)
+
+
+
+@login_required
+def mis_pedidos(request):
+    pedidos = [] 
+    return render(request, 'usuarios/mis_pedidos.html', {'pedidos': pedidos})
+
+def mis_resenas(request):
+    reseñas_usuario = Resena.objects.filter(usuario=request.user)
+    
+    return render(request, 'products/mis_resenas.html', {
+        'reseñas_usuario': reseñas_usuario
+    })
+
+@login_required
+def configuracion(request):
+    return render(request, 'usuarios/configuracion.html')
+
+@login_required
+def editar_perfil(request):
+    usuario = request.user
+
+    if request.method == 'POST':
+        usuario.first_name = request.POST.get('first_name')
+        usuario.last_name = request.POST.get('last_name')
+        usuario.email = request.POST.get('email')
+
+        try:
+            usuario.save()
+            messages.success(request, "Perfil actualizado correctamente.")
+            return redirect('perfil')
+        except Exception as e:
+            messages.error(request, f"Error al actualizar: {e}")
+            return redirect('editar_perfil')
+
+    return render(request, 'usuarios/editar_perfil.html', {'usuario': usuario})
+
 
 def catalogo(request):
     productos = Producto.objects.filter(esta_activo=True)
@@ -310,7 +365,4 @@ def checkout(request):
     }
     
     return render(request, 'carrito/checkout.html', context)
-
-
-
 

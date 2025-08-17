@@ -3,10 +3,9 @@
     <nav class="nav-menu">
         <a href="{% url "home" %}" class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">Inicio</a>
         <a href="{% url "catalogo" %}" class="nav-item {% if request.resolver_match.url_name == 'catalog' %}active{% endif %}">Catálogo</a>
-        {% if user.is_authenticated and user.tipo_membresia != 'regular' %}
-            <a href="{% url "Blog" %}" class="nav-item {% if request.resolver_match.url_name == 'blog' %}active{% endif %}">Blog</a>
-         {% endif %}
+        <a href="{% url "Blog" %}" class="nav-item {% if request.resolver_match.url_name == 'blog' %}active{% endif %}">Blog</a>
         <a href="{% url "acerca" %}" class="nav-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">Nosotros</a>
+        <a href="{% url "membresia" %}" class="nav-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">Membresia</a>
     </nav>
     <div class="user-actions">
         {% if user.is_authenticated %}
@@ -16,14 +15,14 @@
                     {{ cart_items_count }}
                 </span>
             </a>
-            <a href="#" class="btn btn-primary" style="display: flex; align-items: center; gap: 8px;">
+             <a href="{% url 'perfil' %}" class="btn btn-primary" style="display: flex; align-items: center; gap: 8px;">
                 <span>👤</span>
                 <span>Bienvenido, {{ user.username }}</span>
             </a>
             <a href="{% url 'logout' %}" class="btn btn-secondary" style="margin-left: 10px;">
                 Cerrar sesión
             </a>
-        {% else %}
+         {% else %}
             <a href="{% url 'login' %}" class="btn btn-secondary {% if request.resolver_match.url_name == 'login' %}active{% endif %}">Ingresar</a>
             <a href="{% url 'registro' %}" class="btn btn-primary {% if request.resolver_match.url_name == 'registro' %}active{% endif %}">Registrarse</a>
         {% endif %}

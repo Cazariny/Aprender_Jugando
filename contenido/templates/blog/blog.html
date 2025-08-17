@@ -3,6 +3,15 @@
 {% block title %}Blog - "Aprende Jugando"{% endblock %}
 
 {% block content %}
+
+<div id="messageModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <div id="modal-message-text"></div>
+        <button class="modal-accept-btn" onclick="window.location.href='{% url 'Blog' %}'">Aceptar</button>
+    </div>
+</div>
+
 <h1 style="margin-bottom: 10px;">Blog Educativo</h1>
 <p style="margin-bottom: 30px; color: #666;">Consejos y artículos para el desarrollo educativo de tus hijos</p>
 
@@ -65,4 +74,82 @@
     </div>
 </div>
 {% endif %}
+<style>
+    /* Estilos del modal */
+    .modal {
+        display: none; /* Oculto por defecto */
+        position: fixed; /* Posición fija para cubrir toda la pantalla */
+        z-index: 1000; /* Z-index alto para estar encima de todo */
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5); /* Fondo semitransparente */
+        justify-content: center;
+        align-items: center;
+    }
+    .modal-content {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        width: 80%;
+        max-width: 400px;
+        position: relative;
+    }
+    .close-btn {
+        color: #aaa;
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .close-btn:hover,
+    .close-btn:focus {
+        color: black;
+        text-decoration: none;
+    }
+    .modal-accept-btn {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 20px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Verificar si hay mensajes en la página
+        {% if messages %}
+        var modal = document.getElementById('messageModal');
+        var modalText = document.getElementById('modal-message-text');
+        var closeBtn = document.getElementsByClassName('close-btn')[0];
+        
+        // Poner el primer mensaje del Django messages framework en el modal
+        {% for message in messages %}
+        modalText.innerText = '{{ message }}';
+        modal.style.display = 'flex';
+        {% endfor %}
+
+        // Cerrar el modal al hacer clic en la X
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        // Cerrar el modal al hacer clic fuera de él
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+                window.location.href = '{% url 'Blog' %}';
+            }
+        }
+        {% endif %}
+    });
+</script>
+
 {% endblock %}
