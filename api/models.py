@@ -5,7 +5,6 @@ class UsuarioPersonalizado(AbstractUser):
     OPCIONES_MEMBRESIA = [
         ('regular', 'Usuario regular'),
         ('premium', 'Usuario Premium'),
-
     ]
     
     tipo_membresia = models.CharField(
