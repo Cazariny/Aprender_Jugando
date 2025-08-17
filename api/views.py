@@ -21,43 +21,33 @@ def About(request):
     return render(request, "pages/about.html")
 
 def BlogCategory(request):
-    # Obtener todos los posts publicados ordenados por fecha (más recientes primero)
     posts = BlogPost.objects.filter(es_publicado=True).order_by('-fecha_publicacion')
     
-    # Filtrar por categoría si se especifica
     category_slug = request.GET.get('category')
     if category_slug:
         posts = posts.filter(categoria__slug=category_slug)
     
-    # Obtener todas las categorías para los filtros
-    # categories = BlogCategory.objects.all()
     
-    # Preparar el contexto
     context = {
         'posts': posts,
     }
     
-    # Añadir información de la categoría activa si hay filtro
     if category_slug:
         active_category = get_object_or_404(BlogCategory, slug=category_slug)
         context['active_category'] = category_slug
-        context['active_category_name'] = active_category.nombre  # Cambiado de name a nombre
+        context['active_category_name'] = active_category.nombre  
     
     return render(request, "blog/blog.html", context)
 
 def BlogDetail(request, slug):
-    # Obtener el post publicado o mostrar 404 si no existe o no está publicado
     post = get_object_or_404(BlogPost, slug=slug, es_publicado=True)
 
-    # Verificar si el usuario no es premium
     if not request.user.is_authenticated or not request.user.tipo_Membresia == 'premium':
-        # Agregar un mensaje y redirigir al blog.
         messages.info(request, 'Este contenido es solo para miembros premium. Por favor, inicia sesión o actualiza tu membresía para verlo.')
         return redirect('Blog')
 
-    # Incrementar el contador de vistas
     BlogPost.objects.filter(pk=post.pk).update(vistas=F('vistas') + 1)
-    post.refresh_from_db()  # Actualizar el objeto con el nuevo valor de vistas
+    post.refresh_from_db()  
     
     return render(request, "blog/blog_detail.html", {'post': post})
 
@@ -124,7 +114,6 @@ def registro(request):
                 last_name=last_name,
             )
 
-            # Ahora autenticar para login automático:
             user = authenticate(request, email=email, password=password1)
             if user is not None:
                 auth_login(request, user, backend='api.auth_backends.EmailBackend')
@@ -188,35 +177,66 @@ def editar_perfil(request):
 
     return render(request, 'usuarios/editar_perfil.html', {'usuario': usuario})
 
-
 def catalogo(request):
     productos = Producto.objects.filter(esta_activo=True)
     
-    # Filtros
     edad = request.GET.getlist('edad')
     tipo_aprendizaje = request.GET.getlist('tipo')
-    precio = request.GET.get('precio')
+    precio_min = request.GET.get('precio_min')
+    precio_max = request.GET.get('precio_max')
+    
+    filters = Q()
     
     if edad:
         edad_query = Q()
         for rango in edad:
-            if '-' in rango:
-                min_age, max_age = map(int, rango.split('-'))
-                edad_query |= Q(edad_recomendada__contains=f"{min_age}-{max_age}")
+            if rango.startswith("{'value':"):
+                try:
+                    import ast
+                    rango_dict = ast.literal_eval(rango)
+                    rango_val = rango_dict['value']
+                except:
+                    continue
             else:
-                edad_query |= Q(edad_recomendada__contains=rango)
-        productos = productos.filter(edad_query)
+                rango_val = rango
+                
+            if '-' in rango_val:
+                try:
+                    min_age, max_age = map(int, rango_val.split('-'))
+                    edad_query |= Q(edad_recomendada_min__lte=max_age, edad_recomendada_max__gte=min_age)
+                except ValueError:
+                    continue
+            else:
+                try:
+                    edad_query |= Q(edad_recomendada_min__lte=int(rango_val), edad_recomendada_max__gte=int(rango_val))
+                except ValueError:
+                    continue
+        
+        filters &= edad_query
     
     if tipo_aprendizaje:
-        productos = productos.filter(tipo_aprendizaje__in=tipo_aprendizaje)
+        filters &= Q(tipo_aprendizaje__in=tipo_aprendizaje)
     
-    if precio:
-        min_price, max_price = map(float, precio.split('-'))
-        productos = productos.filter(precio__gte=min_price, precio__lte=max_price)
+    if precio_min:
+        try:
+            filters &= Q(precio__gte=float(precio_min))
+        except (ValueError, TypeError):
+            pass
     
-    # Paginación
+    if precio_max:
+        try:
+            filters &= Q(precio__lte=float(precio_max))
+        except (ValueError, TypeError):
+            pass
+    
+    productos = productos.filter(filters)
+    
+    params = request.GET.copy()
+    if 'page' in params:
+        del params['page']
+    
     page = request.GET.get('page', 1)
-    paginator = Paginator(productos, 12)  # 12 productos por página
+    paginator = Paginator(productos, 12)
     
     try:
         productos_paginados = paginator.page(page)
@@ -227,21 +247,32 @@ def catalogo(request):
     
     context = {
         'productos': productos_paginados,
-        'age_ranges': ['1-3', '3-6', '6-9', '9-12'],
+        'age_ranges': [
+            {'value': '1-3', 'label': '1-3 años'},
+            {'value': '3-6', 'label': '3-6 años'},
+            {'value': '6-9', 'label': '6-9 años'},
+            {'value': '9-12', 'label': '9-12 años'},
+            {'value': '12-15', 'label': '12-15 años'},
+        ],
         'tipos_aprendizaje': Producto.OPCIONES_TIPO_APRENDIZAJE,
+        'current_filters': {
+            'edad': edad,
+            'tipo': tipo_aprendizaje,
+            'precio_min': precio_min,
+            'precio_max': precio_max,
+        },
+        'query_params': params.urlencode(),
     }
     return render(request, 'products/catalogo.html', context)
 
 def detalle_producto(request, producto_id):
     producto = get_object_or_404(Producto, id=producto_id, esta_activo=True)
     
-    # Manejar el envío de reseñas
     if request.method == 'POST' and request.user.is_authenticated:
         form_data = request.POST
         calificacion = form_data.get('calificacion')
         comentario = form_data.get('comentario')
         
-        # Validar que el usuario no haya dejado ya una reseña para este producto
         if not Resena.objects.filter(producto=producto, usuario=request.user).exists():
             Resena.objects.create(
                 producto=producto,
@@ -252,7 +283,6 @@ def detalle_producto(request, producto_id):
         else:
             messages.warning(request, 'Ya has enviado una reseña para este producto.')
     
-    # Calcular precio con descuento si es miembro educativo
     precio_con_descuento = None
     if request.user.is_authenticated and request.user.es_miembro_educativo():
         descuento = producto.descuento_para_miembros / 100
@@ -270,10 +300,8 @@ def agregar_al_carrito(request, producto_id):
         producto = get_object_or_404(Producto, id=producto_id)
         cantidad = int(request.POST.get('cantidad', 1))
         
-        # Obtener o crear el carrito del usuario
         carrito, created = Carrito.objects.get_or_create(usuario=request.user)
         
-        # Agregar o actualizar el item en el carrito
         item, item_created = ItemCarrito.objects.get_or_create(
             carrito=carrito,
             producto=producto,
@@ -301,7 +329,6 @@ def vista_carrito(request):
 
     items = ItemCarrito.objects.filter(carrito=carrito)
 
-    # 🛒 Cálculo de precios
     PRECIO_ENVIO = 80
     subtotal = sum(item.producto.precio * item.cantidad for item in items)
     envio = PRECIO_ENVIO
@@ -328,10 +355,8 @@ def eliminar_del_carrito(request, item_id):
 
 @login_required
 def checkout(request):
-    # Obtener el carrito de la sesión
     carrito = request.session.get('carrito/carrito.hmtl', {})
     
-    # Preparar los items para el template
     items = []
     subtotal = 0
     
@@ -353,7 +378,6 @@ def checkout(request):
         except Producto.DoesNotExist:
             continue
     
-    # Calcular envío (ejemplo: 5% del subtotal con mínimo $5)
     envio = max(subtotal * 0.05, 5)
     total = subtotal + envio
     

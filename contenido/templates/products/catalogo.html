@@ -17,8 +17,8 @@
                     <h3 class="filter-title">Edad</h3>
                     {% for age in age_ranges %}
                     <div class="filter-option">
-                        <input type="checkbox" id="age{{ forloop.counter }}" name="edad" value="{{ age }}">
-                        <label for="age{{ forloop.counter }}">{{ age }}</label>
+                        <input type="checkbox" id="age{{ forloop.counter }}" name="edad" value="{{ age.value }}">
+                        <label for="age{{ forloop.counter }}">{{ age.label }}</label>
                     </div>
                     {% endfor %}
                 </div>
@@ -35,17 +35,21 @@
                 
                 <div class="filter-group">
                     <h3 class="filter-title">Precio</h3>
-                    <div class="filter-option">
-                        <input type="checkbox" id="price1" name="precio" value="0-20">
-                        <label for="price1">Menos de $20</label>
-                    </div>
-                    <div class="filter-option">
-                        <input type="checkbox" id="price2" name="precio" value="20-40">
-                        <label for="price2">$20 - $40</label>
-                    </div>
-                    <div class="filter-option">
-                        <input type="checkbox" id="price3" name="precio" value="40-1000">
-                        <label for="price3">Más de $40</label>
+                    <div class="price-filter-container" style="display: flex; gap: 10px; align-items: center;">
+                        <div>
+                            <label for="precio_min" style="display: block; margin-bottom: 5px;">Mínimo</label>
+                            <input type="number" id="precio_min" name="precio_min" 
+                                   value="{{ current_filters.precio_min }}" 
+                                   placeholder="0" min="0" step="0.01" 
+                                   style="width: 100px; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                        </div>
+                        <div>
+                            <label for="precio_max" style="display: block; margin-bottom: 5px;">Máximo</label>
+                            <input type="number" id="precio_max" name="precio_max" 
+                                   value="{{ current_filters.precio_max }}" 
+                                   placeholder="1000" min="0" step="0.01" 
+                                   style="width: 100px; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                        </div>
                     </div>
                 </div>
                 
@@ -105,23 +109,22 @@
     <!-- Pagination -->
     {% if productos.has_other_pages %}
     <div class="pagination">
-        {% if productos.has_previous %}
-        <a href="?page={{ productos.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link" style="text-decoration: none;">&laquo;</a>
-        {% endif %}
-        
-        {% for i in productos.paginator.page_range %}
-        {% if productos.number == i %}
-        <span class="current-page" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">{{ i }}</span>
-        {% else %}
-        <a href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link" style="text-decoration: none; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">{{ i }}</a>
-        {% endif %}
-        {% endfor %}
-        
-        {% if productos.has_next %}
-        <a href="?page={{ productos.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="page-link" style="text-decoration: none;">&raquo;</a>
+        <span class="step-links">
+            {% if productos.has_previous %}
+                <a href="?page=1{% if query_params %}&{{ query_params }}{% endif %}">&laquo; primera</a>
+                <a href="?page={{ productos.previous_page_number }}{% if query_params %}&{{ query_params }}{% endif %}">anterior</a>
+            {% endif %}
+    
+            <span class="current">
+                Página {{ productos.number }} de {{ productos.paginator.num_pages }}.
+            </span>
+    
+            {% if productos.has_next %}
+                <a href="?page={{ productos.next_page_number }}{% if query_params %}&{{ query_params }}{% endif %}">siguiente</a>
+                <a href="?page={{ productos.paginator.num_pages }}{% if query_params %}&{{ query_params }}{% endif %}">última &raquo;</a>
+            {% endif %}
+        </span>
         {% endif %}
     </div>
-    {% endif %}
-</div>
 
 {% endblock %}

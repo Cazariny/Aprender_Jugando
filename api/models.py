@@ -61,7 +61,8 @@ class Producto(models.Model):
     codigo = models.CharField(max_length=50, unique=True)
     descripcion = models.TextField()
     material = models.CharField(max_length=50, choices=OPCIONES_MATERIAL)
-    edad_recomendada = models.CharField(max_length=50)
+    edad_recomendada_min = models.PositiveIntegerField()
+    edad_recomendada_max = models.PositiveIntegerField() 
     precio = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField(default=0)
     esta_activo = models.BooleanField(default=True)
@@ -117,7 +118,7 @@ class Resena(models.Model):
         Producto,
         on_delete=models.CASCADE,
         related_name='resenas'
-    )  # Eliminé null=True ya que no debería ser necesario
+    ) 
     usuario = models.ForeignKey(
         UsuarioPersonalizado,
         on_delete=models.CASCADE,
