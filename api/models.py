@@ -99,12 +99,29 @@ class Producto(models.Model):
         default=0,
         help_text="Porcentaje de descuento para miembros educativos"
     )
+    
+    @property
+    def cantidad_resenas(self):
+        return self.resenas.count()
+    
     def promedio_calificacion(self):
         from django.db.models import Avg
         return self.resenas.aggregate(Avg('calificacion'))['calificacion__avg'] or 0
     
-    def _str_(self):
-        return self.nombre
+    def get_estrellas(self):
+        promedio = self.promedio_calificacion()
+        entero = int(promedio)
+        decimal = promedio % 1 >= 0.5
+        vacio = 5 - entero - (1 if decimal else 0)
+        
+        return {
+            'enteros': [1] * entero,  # Lista con 'entero' elementos
+            'tiene_media': decimal,
+            'vacios': [1] * vacio     # Lista con 'vacio' elementos
+        }
+    
+    def get_edad_recomendada(self):
+        return f"{self.edad_recomendada_min}-{self.edad_recomendada_max} años"
     
     class Meta:
         ordering = ['-fecha_creacion']
