@@ -45,7 +45,9 @@ urlpatterns = [
     path('perfil/mis_resenas/', views_api.mis_resenas, name='mis_resenas'),
     path('configuracion/', views_api.configuracion, name='configuracion'),  
     path('actualizar-cantidad/<int:item_id>/', views_api.actualizar_cantidad, name='actualizar_cantidad'),
-    path('confirmacion/<int:orden_id>/', views_api.confirmacion_compra, name='confirmacion_compra')
+    path('confirmacion/<int:orden_id>/', views_api.confirmacion_compra, name='confirmacion_compra'),
+     path('terminos-condiciones/', views_api.terminos_condiciones, name='terminosCondiciones'),
+
     
 ]
 

@@ -44,10 +44,11 @@
             <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px;">
                 <h2 style="margin-bottom: 20px;">Resumen de la Cuenta</h2>
                 <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
-                    <div class="dashboard-card" style="background: #f9fafb; padding: 20px; border-radius: 8px; text-align: center;">
-                        <div class="dashboard-number">{{ pedidos.count }}</div>
-                        <div class="dashboard-label">Pedidos Realizados</div>
+                <div class="dashboard-card" style="background: #f9fafb; padding: 20px; border-radius: 8px; text-align: center;">
+                 <div class="dashboard-number">{{ total_ordenes }}</div>
+                 <div class="dashboard-label">productos comprados</div>
                     </div>
+
                    <div class="dashboard-card" style="background: #f9fafb; padding: 20px; border-radius: 8px; text-align: center;">
                          <div class="dashboard-number">{{ total_reseñas }}</div>
                                  <div class="dashboard-label">Reseñas Escritas</div>

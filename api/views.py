@@ -14,13 +14,11 @@ from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 import uuid
+from django.db.models import Sum
 
 
-
-
-
-
-
+def terminos_condiciones(request):
+    return render(request, 'TYC/terminosCondiciones.html')
 def About(request):
     return render(request, "pages/about.html")
 
@@ -137,20 +135,19 @@ def registro(request):
 def perfil(request):
     total_reseñas = Resena.objects.filter(usuario=request.user).count()
     reseñas_usuario = Resena.objects.filter(usuario=request.user).select_related('producto')
-
+    total_ordenes = Orden.objects.filter(usuario=request.user).count()
     context = {
         'total_reseñas': total_reseñas,
         'reseñas_usuario': reseñas_usuario,
+        'total_ordenes': total_ordenes,
     }
     return render(request, 'usuarios/perfil.html', context)
 
 
-
 @login_required
 def mis_pedidos(request):
-    pedidos = [] 
-    return render(request, 'usuarios/mis_pedidos.html', {'pedidos': pedidos})
-
+    pedidos_usuario = Orden.objects.filter(usuario=request.user).order_by('-fecha_creacion')
+    return render(request, "products/mis_pedidos.html", {"pedidos": pedidos_usuario})
 def mis_resenas(request):
     reseñas_usuario = Resena.objects.filter(usuario=request.user)
     

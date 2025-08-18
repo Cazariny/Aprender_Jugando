@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Mis Pedidos{% endblock %}
+
+{% block content %}
+<h2>Mis Pedidos</h2>
+
+{% if pedidos %}
+    <p>Total de pedidos realizados: {{ pedidos.count }}</p>
+    <ul style="list-style: none; padding: 0;">
+        {% for pedido in pedidos %}
+        <li class="pedido-item" style="padding: 15px; border-bottom: 1px solid #eee;">
+            <h4>Pedido #{{ pedido.numero_orden }}</h4>
+            <p><strong>Fecha:</strong> {{ pedido.fecha_creacion|date:"d/m/Y H:i" }}</p>
+            <p><strong>Total:</strong> ${{ pedido.total|floatformat:2 }}</p>
+            <p><strong>Método de pago:</strong> {{ pedido.metodo_pago }}</p>
+
+            <ul style="list-style: none; padding-left: 15px; margin-top: 10px;">
+                {% for item in pedido.itemorden_set.all %}
+                <li>
+                    {{ item.producto.nombre }} (x{{ item.cantidad }}) - ${{ item.subtotal|floatformat:2 }}
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No tienes pedidos todavía.</p>
+{% endif %}
+{% endblock %}
