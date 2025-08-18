@@ -1,6 +1,6 @@
 from django.views.generic import DetailView
 from django.db.models import F
-from .models import BlogPost, BlogCategory, Producto, Carrito, ItemCarrito, Carrito, Resena, Orden
+from .models import BlogPost, BlogCategory, Producto, Carrito, ItemCarrito, Carrito, Resena, Orden, Comentarios
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
 from django.db.models import F
@@ -44,14 +44,41 @@ def BlogCategory(request):
 def BlogDetail(request, slug):
     post = get_object_or_404(BlogPost, slug=slug, es_publicado=True)
 
-    if not request.user.is_authenticated or not request.user.tipo_Membresia == 'premium':
+    if not request.user.is_authenticated or not request.user.tipo_membresia == 'premium':
         messages.info(request, 'Este contenido es solo para miembros premium. Por favor, inicia sesión o actualiza tu membresía para verlo.')
         return redirect('Blog')
 
-    BlogPost.objects.filter(pk=post.pk).update(vistas=F('vistas') + 1)
-    post.refresh_from_db()  
     
-    return render(request, "blog/blog_detail.html", {'post': post})
+    if request.method == 'POST':
+        if request.user.is_authenticated:
+            comentario_contenido = request.POST.get('comentario')
+            if comentario_contenido:
+                Comentarios.objects.create(
+                    post=post,
+                    user=request.user,
+                    contenido=comentario_contenido
+                )
+                messages.success(request, 'Comentario publicado exitosamente.')
+                return redirect('BlogDetail', slug=post.slug)
+        else:
+            messages.error(request, 'Debes iniciar sesión para comentar.')
+            return redirect('login')
+
+    # Actualizar vistas del post
+    BlogPost.objects.filter(pk=post.pk).update(vistas=F('vistas') + 1)
+    post.refresh_from_db()
+
+    # Obtener comentarios del post
+    comentarios = Comentarios.objects.filter(post=post).order_by('-created_at')
+
+    # # Post Relacionados
+    # related_posts = BlogPost.objects.filter(categoria=post.categoria).exclude(pk=post.pk).order_by('?')[:3]
+
+    return render(request, "blog/blog_detail.html", {
+        'post': post,
+        'comentarios': comentarios,
+        # 'related_posts': related_posts
+    })
 
 def membresia(request):
     return render(request, "membresia/membresia.html")
@@ -492,3 +519,47 @@ def confirmacion_compra(request, orden_id):
 
 def contacto(request):
     return render(request, "contacto/contacto.html")
+
+# ... (imports existentes)
+from django.db import transaction
+
+@login_required
+def checkout_membresia(request):
+    usuario = request.user
+    
+    # Precio fijo de la membresía premium
+    PRECIO_MEMBRESIA = 19.99
+
+    if request.method == 'POST':
+        with transaction.atomic():
+            metodo_pago = request.POST.get('metodo_pago', 'credit_card')
+            
+            # Crear una orden para la membresía
+            orden = Orden.objects.create(
+                usuario=usuario,
+                numero_orden=generar_numero_orden(),
+                estado='completed',  # Se asume que el pago se completa inmediatamente para un producto digital
+                metodo_pago=metodo_pago,
+                direccion_envio='N/A', # No aplica para membresía
+                direccion_facturacion='N/A', # No aplica para membresía
+                total=PRECIO_MEMBRESIA
+            )
+            
+            # Actualizar el tipo de usuario a 'premium'
+            usuario.tipo_membresia = 'premium' # Se debe cambiar el atributo 'tipo_usuario' a 'tipo_membresia' como se define en models.py
+            usuario.save()
+            
+            messages.success(request, "¡Felicidades! Ahora eres un usuario Premium.")
+
+        return redirect('confirmacion_membresia', orden_id=orden.id)
+    
+    return render(request, 'membresia/checkout_membresia.html', {
+        'total': PRECIO_MEMBRESIA,
+        'usuario': usuario,
+        'is_membership': True
+    })
+
+@login_required
+def confirmacion_membresia(request, orden_id):
+    orden = get_object_or_404(Orden, id=orden_id, usuario=request.user)
+    return render(request, 'membresia/confirmacion_membresia.html', {'orden': orden})

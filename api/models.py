@@ -294,6 +294,22 @@ class BlogPost(models.Model):
     
     class Meta:
         ordering = ['-fecha_publicacion']
+        
+class Comentarios(models.Model):
+    post = models.ForeignKey(
+        BlogPost,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    user = models.ForeignKey(
+        UsuarioPersonalizado,
+        on_delete=models.CASCADE
+    )
+    contenido = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Comentario de {self.user.username} en {self.post.titulo}"
 
 
 
