@@ -11,6 +11,9 @@ def home(request):
     print("Usuario logueado:", request.user)
     return render(request, 'pages/home.html')
 
+def top10(request):
+    return render(request, 'products/top10.html')
+
 def about(request):
     return render(request, 'pages/about.html')
 

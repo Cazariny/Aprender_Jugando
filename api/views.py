@@ -17,6 +17,33 @@ import uuid
 from django.db.models import Sum
 
 
+def top10(request):
+    # Obtener productos con al menos 1 reseña o todos si hay pocos
+    productos = Producto.objects.filter(
+        esta_activo=True
+    ).annotate(
+        num_resenas=Count('resenas'),
+        avg_rating=Avg('resenas__calificacion')
+    ).order_by('-avg_rating', '-num_resenas')
+    
+    # Si hay menos de 10 productos con reseñas, mostrar algunos sin reseñas
+    if productos.filter(num_resenas__gt=0).count() < 10:
+        sin_resenas = Producto.objects.filter(
+            esta_activo=True,
+            resenas__isnull=True
+        ).annotate(
+            num_resenas=Value(0, output_field=IntegerField()),
+            avg_rating=Value(0, output_field=FloatField())
+        )[:10-productos.count()]
+        productos = list(productos) + list(sin_resenas)
+    
+    context = {
+        'productos': productos[:10],  # Siempre limitar a 10
+        'titulo': 'Top 10 Productos',
+        'subtitulo': 'Los juguetes educativos mejor valorados por nuestros clientes'
+    }
+    return render(request, 'products/top10.html', context)
+
 def terminos_condiciones(request):
     return render(request, 'TYC/terminosCondiciones.html')
 def About(request):
