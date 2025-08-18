@@ -48,8 +48,8 @@ urlpatterns = [
     path('confirmacion/<int:orden_id>/', views_api.confirmacion_compra, name='confirmacion_compra'),
     path('top10/', views.top10, name='top10'),
     path('terminos-condiciones/', views_api.terminos_condiciones, name='terminosCondiciones'),
-
-
+    path('checkout/membresia/', views_api.checkout_membresia, name='checkout_membresia'),
+    path('confirmacion/membresia/<int:orden_id>/', views_api.confirmacion_membresia, name='confirmacion_membresia'),  
 ]
 
 if settings.DEBUG:

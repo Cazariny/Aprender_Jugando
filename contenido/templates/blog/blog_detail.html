@@ -55,14 +55,14 @@
 
 <!-- Comments Section -->
 <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-    <h2 style="margin-bottom: 20px;">Comentarios ({{ comments.count }})</h2>
+    <h2 style="margin-bottom: 20px;">Comentarios ({{ comentarios.count }})</h2>
     
     {% if user.is_authenticated %}
     <form method="post" style="margin-bottom: 30px;">
         {% csrf_token %}
         <div class="form-group">
             <label class="form-label">Tu Comentario</label>
-            <textarea class="form-input" name="comment" rows="3" placeholder="Comparte tus pensamientos..."></textarea>
+            <textarea class="form-input" name="comentario" rows="3" placeholder="Comparte tus pensamientos..."></textarea>
         </div>
         <button type="submit" class="btn btn-primary">Publicar Comentario</button>
     </form>
@@ -70,13 +70,13 @@
     <p>Por favor <a href="">inicia sesión</a> para dejar un comentario.</p>
     {% endif %}
     
-    {% for comment in comments %}
+    {% for comentario in comentarios %}
     <div style="padding: 20px 0; border-bottom: 1px solid #e0e0e0;">
         <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-            <div style="font-weight: 600;">{{ comment.user.username }}</div>
-            <div style="color: #666; font-size: 14px;">{{ comment.created_at|date:"d F, Y" }}</div>
+            <div style="font-weight: 600;">{{ comentario.user.username }}</div>
+            <div style="color: #666; font-size: 14px;">{{ comentario.created_at|date:"d F, Y" }}</div>
         </div>
-        <p>{{ comment.content }}</p>
+        <p>{{ comentario.contenido }}</p>
     </div>
     {% empty %}
     <p>No hay comentarios aún. Sé el primero en comentar.</p>

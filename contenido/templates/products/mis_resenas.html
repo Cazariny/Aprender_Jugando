@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Mis Reseñas{% endblock %}
 
@@ -10,8 +11,16 @@
       <p>Total de reseñas escritas: {{ reseñas_usuario.count }}</p>
       <ul style="list-style: none; padding: 0;">
           {% for resena in reseñas_usuario %}
-              <li class="resena-item">
-                  <img src="{{ resena.producto.imagen.url }}" alt="{{ resena.producto.nombre }}" class="product-image">
+              <li class="resena-item" style="display: flex; gap: 15px; align-items: center;">
+                  {% with imagenes=resena.producto.imagenes.all %}
+                      {% with imagen_principal=imagenes|first %}
+                          {% if imagen_principal %}
+                              <img src="{{ imagen_principal.imagen.url }}" alt="{{ resena.producto.nombre }}" class="product-image" style="width: 240px; height: 240px; object-fit: cover; border-radius: 12px;">
+                          {% else %}
+                              <img src="{% static 'images/placeholder.png' %}" alt="{{ resena.producto.nombre }}" class="product-image" style="width: 240px; height: 240px; object-fit: cover; border-radius: 12px;">
+                          {% endif %}
+                      {% endwith %}
+                  {% endwith %}
                   <div class="resena-info">
                       <h4>{{ resena.producto.nombre }}</h4>
                       <p>{{ resena.producto.descripcion }}</p>

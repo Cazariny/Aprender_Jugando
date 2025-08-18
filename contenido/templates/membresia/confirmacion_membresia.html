@@ -1,0 +1,17 @@
+<div style="max-width: 600px; margin: 40px auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); font-family: 'Segoe UI', sans-serif;">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h2 style="color: #4CAF50; font-size: 28px; margin-bottom: 10px;">¡Felicidades!</h2>
+        <p style="font-size: 16px; color: #555;">Tu membresía Premium ha sido activada correctamente.</p>
+    </div>
+
+    <div style="border-top: 1px solid #eee; padding-top: 20px;">
+        <p style="font-size: 18px; margin-bottom: 10px;"><strong>Número de orden:</strong> #{{ orden.id }}</p>
+        <p style="font-size: 18px; margin-bottom: 10px;"><strong>Total pagado:</strong> ${{ orden.total|floatformat:2 }}</p>
+        <p style="font-size: 18px; margin-bottom: 10px;"><strong>Método de pago:</strong> {{ orden.metodo_pago }}</p>
+        <p style="font-size: 18px; margin-bottom: 10px;"><strong>Fecha:</strong> {{ orden.fecha|date:"d/m/Y H:i" }}</p>
+    </div>
+
+    <div style="margin-top: 30px; text-align: center;">
+        <a href="{% url 'home' %}" style="display: inline-block; padding: 12px 24px; background: #4CAF50; color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Volver al inicio</a>
+    </div>
+</div>
