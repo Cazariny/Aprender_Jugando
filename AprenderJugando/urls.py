@@ -46,7 +46,13 @@ urlpatterns = [
     path('configuracion/', views_api.configuracion, name='configuracion'),  
     path('actualizar-cantidad/<int:item_id>/', views_api.actualizar_cantidad, name='actualizar_cantidad'),
     path('confirmacion/<int:orden_id>/', views_api.confirmacion_compra, name='confirmacion_compra'),
+<<<<<<< HEAD
     path('top10/', views.top10, name='top10'),
+=======
+     path('terminos-condiciones/', views_api.terminos_condiciones, name='terminosCondiciones'),
+
+    
+>>>>>>> 7301f02746000ae999e001fa02e9b6baafbb0267
 ]
 
 if settings.DEBUG:

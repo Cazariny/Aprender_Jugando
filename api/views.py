@@ -15,8 +15,10 @@ from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.db.models import Avg, Count
 import uuid
+from django.db.models import Sum
 
 
+<<<<<<< HEAD
 def top10(request):
     # Obtener productos con al menos 1 reseña o todos si hay pocos
     productos = Producto.objects.filter(
@@ -44,6 +46,10 @@ def top10(request):
     }
     return render(request, 'products/top10.html', context)
 
+=======
+def terminos_condiciones(request):
+    return render(request, 'TYC/terminosCondiciones.html')
+>>>>>>> 7301f02746000ae999e001fa02e9b6baafbb0267
 def About(request):
     return render(request, "pages/about.html")
 
@@ -158,20 +164,19 @@ def registro(request):
 def perfil(request):
     total_reseñas = Resena.objects.filter(usuario=request.user).count()
     reseñas_usuario = Resena.objects.filter(usuario=request.user).select_related('producto')
-
+    total_ordenes = Orden.objects.filter(usuario=request.user).count()
     context = {
         'total_reseñas': total_reseñas,
         'reseñas_usuario': reseñas_usuario,
+        'total_ordenes': total_ordenes,
     }
     return render(request, 'usuarios/perfil.html', context)
 
 
-
 @login_required
 def mis_pedidos(request):
-    pedidos = [] 
-    return render(request, 'usuarios/mis_pedidos.html', {'pedidos': pedidos})
-
+    pedidos_usuario = Orden.objects.filter(usuario=request.user).order_by('-fecha_creacion')
+    return render(request, "products/mis_pedidos.html", {"pedidos": pedidos_usuario})
 def mis_resenas(request):
     reseñas_usuario = Resena.objects.filter(usuario=request.user)
     
