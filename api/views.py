@@ -18,7 +18,6 @@ from django.db.models import Sum
 
 
 def top10(request):
-    # Obtener productos con al menos 1 reseña o todos si hay pocos
     productos = Producto.objects.filter(
         esta_activo=True
     ).annotate(
@@ -26,7 +25,6 @@ def top10(request):
         avg_rating=Avg('resenas__calificacion')
     ).order_by('-avg_rating', '-num_resenas')
     
-    # Si hay menos de 10 productos con reseñas, mostrar algunos sin reseñas
     if productos.filter(num_resenas__gt=0).count() < 10:
         sin_resenas = Producto.objects.filter(
             esta_activo=True,
@@ -38,7 +36,7 @@ def top10(request):
         productos = list(productos) + list(sin_resenas)
     
     context = {
-        'productos': productos[:10],  # Siempre limitar a 10
+        'productos': productos[:10], 
         'titulo': 'Top 10 Productos',
         'subtitulo': 'Los juguetes educativos mejor valorados por nuestros clientes'
     }
@@ -98,13 +96,9 @@ def BlogDetail(request, slug):
     # Obtener comentarios del post
     comentarios = Comentarios.objects.filter(post=post).order_by('-created_at')
 
-    # # Post Relacionados
-    # related_posts = BlogPost.objects.filter(categoria=post.categoria).exclude(pk=post.pk).order_by('?')[:3]
-
     return render(request, "blog/blog_detail.html", {
         'post': post,
         'comentarios': comentarios,
-        # 'related_posts': related_posts
     })
 
 def membresia(request):
@@ -464,7 +458,6 @@ def checkout(request):
     envio = PRECIO_ENVIO
     total = subtotal + envio
 
-    # ✅ Todo esto debe estar dentro del bloque POST
     if request.method == 'POST':
         usuario.nombre_envio = request.POST.get('nombre')
         usuario.direccion_envio = request.POST.get('direccion')
@@ -489,7 +482,6 @@ def checkout(request):
 
         return redirect('confirmacion_compra', orden_id=orden.id)
 
-    # ✅ Este render solo se ejecuta si NO es POST
     return render(request, 'carrito/checkout.html', {
         'items': items,
         'subtotal': subtotal,
@@ -506,14 +498,12 @@ def actualizar_cantidad(request, item_id):
             item = ItemCarrito.objects.get(id=item_id, carrito__usuario=request.user)
             nueva_cantidad = int(request.POST.get('cantidad', 1))
 
-            # Guardar en sesión temporalmente
             if 'cantidades_temporales' not in request.session:
                 request.session['cantidades_temporales'] = {}
 
             request.session['cantidades_temporales'][str(item_id)] = nueva_cantidad
             request.session.modified = True
 
-            # Recalcular totales
             carrito = item.carrito
             items = ItemCarrito.objects.filter(carrito=carrito)
             subtotal_total = 0
