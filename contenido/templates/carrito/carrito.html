@@ -44,11 +44,14 @@
                 </td>
                 <td>${{ item.producto.precio }}</td>
                 <td>
-                    <input type="number" value="{{ item.cantidad }}" min="1" style="width: 60px; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
-                </td>
-                <td>${{ item.subtotal }}</td>
+                <input type="number" 
+                    value="{{ item.cantidad }}" 
+                    min="1" 
+                    data-item-id="{{ item.item.id }}"
+                    style="width: 60px; padding: 8px; border-radius: 6px; border: 1px solid #ddd;"></td>
+                <td id="subtotal-item-{{ item.item.id }}">${{ item.precio_item }}</td>
                 <td>
-                <form method="POST" action="{% url 'eliminar_del_carrito' item.id %}">
+                <form method="POST" action="{% url 'eliminar_del_carrito' item.item.id %}">
                     {% csrf_token %}
                     <button type="submit">🗑️</button>
                 </form>
@@ -59,35 +62,42 @@
             {% endfor %}
             
             {% block scripts %}
-            <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                function actualizarTotales() {
-                let total = 0;
-                const envio = parseFloat(document.querySelector('.cart-summary #envio').textContent.replace('$', '')) || 0;
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function actualizarCantidad(itemId, nuevaCantidad) {
+        fetch(`/actualizar-cantidad/${itemId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `cantidad=${nuevaCantidad}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Actualizar subtotal del producto
+                const subtotalItem = document.querySelector(`#subtotal-item-${itemId}`);
+                if (subtotalItem) subtotalItem.textContent = data.nuevoSubtotal;
 
-                document.querySelectorAll('tbody tr').forEach(row => {
-                    const precioText = row.children[1].textContent.replace('$', '');
-                    const precio = parseFloat(precioText);
-                    const cantidadInput = row.querySelector('input[type="number"]');
-                    const cantidad = parseInt(cantidadInput.value);
-                    const subtotal = precio * cantidad;
+                // Actualizar resumen del carrito
+                document.querySelector('#subtotal').textContent = data.subtotalTotal;
+                document.querySelector('#total').textContent = data.total;
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+    }
 
-                    // Actualiza el subtotal visual
-                    row.children[3].textContent = `$${subtotal.toFixed(2)}`;
-                    total += subtotal;
-                });
-
-                // Actualiza resumen
-                document.querySelector('.cart-summary #subtotal').textContent = `$${total.toFixed(2)}`;
-                document.querySelector('.cart-summary #total').textContent = `$${(total + envio).toFixed(2)}`;
-                }
-
-                document.querySelectorAll('input[type="number"]').forEach(input => {
-                input.addEventListener('input', actualizarTotales);
-                });
-            });
-            </script>
-            {% endblock %}
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('change', function() {
+            const itemId = this.getAttribute('data-item-id');
+            actualizarCantidad(itemId, this.value);
+        });
+    });
+});
+</script>
+{% endblock %}
         </tbody>
     </table>
 
@@ -109,9 +119,12 @@
         </div>
 
         <div style="display: flex; justify-content: space-between; margin-top: 30px;">
-            <a href="{% url 'catalogo' %}" class="btn btn-secondary">Seguir Comprando</a>
-            <a href="{% url 'checkout' %}" class="btn btn-primary">Proceder al Pago</a>
-        </div>
+    <a href="{% url 'catalogo' %}" class="btn btn-secondary">Seguir Comprando</a>
+
+    {% if items %}
+        <a href="{% url 'checkout' %}" class="btn btn-primary">Proceder al Pago</a>
+    {% endif %}
+</div>
     </div>
 </div>
 {% endblock %}

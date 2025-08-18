@@ -12,11 +12,11 @@
 </head>
 <body>
     {% if messages %}
-  <ul class="messages">
-    {% for message in messages %}
-      <li>{{ message }}</li>
-    {% endfor %}
-  </ul>
+  {% for message in messages %}
+    {% if 'header' in message.tags %}
+      <div class="toast-header">{{ message }}</div>
+    {% endif %}
+  {% endfor %}
 {% endif %}
     <div class="container">
         {% include 'partials/_header.html' %}
@@ -30,3 +30,27 @@
     {% block extra_js %}{% endblock %}
 </body>
 </html>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toast = document.querySelector('.toast-header');
+    if (toast) {
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.5s ease-out';
+        setTimeout(() => toast.remove(), 500); // elimina el elemento del DOM
+      }, 3000); // desaparece después de 3 segundos
+    }
+  });
+</script>
+<style>.toast-header {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background-color: #d4edda;
+  color: #155724;
+  padding: 10px 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  z-index: 1000;
+  opacity: 1;
+}</style>

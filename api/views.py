@@ -1,6 +1,6 @@
 from django.views.generic import DetailView
 from django.db.models import F
-from .models import BlogPost, BlogCategory, Producto, Carrito, ItemCarrito, Carrito, Resena
+from .models import BlogPost, BlogCategory, Producto, Carrito, ItemCarrito, Carrito, Resena, Orden
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
 from django.db.models import F
@@ -12,6 +12,10 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
+from django.http import JsonResponse
+import uuid
+
+
 
 
 
@@ -281,7 +285,7 @@ def detalle_producto(request, producto_id):
                 comentario=comentario
             )
         else:
-            messages.warning(request, 'Ya has enviado una reseña para este producto.')
+            messages.warning(request, 'Ya has enviado una reseña para este producto.', extra_tags='header')
     
     precio_con_descuento = None
     if request.user.is_authenticated and request.user.es_miembro_educativo():
@@ -295,22 +299,26 @@ def detalle_producto(request, producto_id):
     }
     return render(request, 'products/producto.html', context)
 
+
 def agregar_al_carrito(request, producto_id):
     if request.method == 'POST':
         producto = get_object_or_404(Producto, id=producto_id)
         cantidad = int(request.POST.get('cantidad', 1))
-        
+
         carrito, created = Carrito.objects.get_or_create(usuario=request.user)
-        
+
         item, item_created = ItemCarrito.objects.get_or_create(
             carrito=carrito,
             producto=producto,
             defaults={'cantidad': cantidad}
         )
+
         if not item_created:
             item.cantidad += cantidad
             item.save()
-        return redirect('detalle_producto', producto_id=producto.id)  
+
+        messages.success(request, 'Producto añadido al carrito.', extra_tags='header')
+        return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
 @login_required
@@ -327,10 +335,27 @@ def vista_carrito(request):
             'total': 0
         })
 
-    items = ItemCarrito.objects.filter(carrito=carrito)
+    # Obtener cantidades temporales de la sesión
+    cantidades_temporales = request.session.get('cantidades_temporales', {})
+    
+    items = []
+    subtotal = 0
+    
+    for item in ItemCarrito.objects.filter(carrito=carrito):
+        # Usar cantidad temporal si existe, de lo contrario usar la de la BD
+        cantidad = cantidades_temporales.get(str(item.id), item.cantidad)
+        precio_item = item.producto.precio * cantidad
+        subtotal += precio_item
+        
+        items.append({
+            'item': item,  # Objeto completo de ItemCarrito
+            'producto': item.producto,
+            'cantidad': cantidad,
+            'precio_item': precio_item,
+            'imagen_principal': item.producto.imagenes.filter(es_principal=True).first()
+        })
 
     PRECIO_ENVIO = 80
-    subtotal = sum(item.producto.precio * item.cantidad for item in items)
     envio = PRECIO_ENVIO
     total = subtotal + envio
 
@@ -350,43 +375,120 @@ def eliminar_del_carrito(request, item_id):
     item = get_object_or_404(ItemCarrito, id=item_id, carrito__usuario=request.user)
     print("Eliminando item:", item.id)
     item.delete()
+    messages.success(request, 'Se ha eliminado el producto.', extra_tags='header')
     return redirect('carrito')
+
+
+def generar_numero_orden():
+    return str(uuid.uuid4())[:12].replace('-', '').upper()
+
 
 
 @login_required
 def checkout(request):
-    carrito = request.session.get('carrito/carrito.hmtl', {})
-    
+    usuario = request.user
+
+    cantidades_temporales = request.session.get('cantidades_temporales', {})
+    carrito = Carrito.objects.filter(usuario=usuario).first()
+    if not carrito:
+        return redirect('vista_carrito')
+
     items = []
     subtotal = 0
-    
-    for producto_id, item_data in carrito.items():
-        try:
-            producto = Producto.objects.get(id=producto_id)
-            cantidad = item_data['cantidad']
-            precio_unitario = producto.precio
-            subtotal_item = precio_unitario * cantidad
-            
-            items.append({
-                'producto': producto,
-                'cantidad': cantidad,
-                'precio_unitario': precio_unitario,
-                'subtotal': subtotal_item
-            })
-            
-            subtotal += subtotal_item
-        except Producto.DoesNotExist:
-            continue
-    
-    envio = max(subtotal * 0.05, 5)
+
+    for item in ItemCarrito.objects.filter(carrito=carrito):
+        cantidad = cantidades_temporales.get(str(item.id), item.cantidad)
+        precio_item = item.producto.precio * cantidad
+        subtotal += precio_item
+
+        items.append({
+            'producto': item.producto,
+            'cantidad': cantidad,
+            'precio_unitario': item.producto.precio,
+            'subtotal': precio_item,
+            'imagen_principal': item.producto.imagenes.filter(es_principal=True).first()
+        })
+
+    PRECIO_ENVIO = 80
+    envio = PRECIO_ENVIO
     total = subtotal + envio
-    
-    context = {
+
+    # ✅ Todo esto debe estar dentro del bloque POST
+    if request.method == 'POST':
+        usuario.nombre_envio = request.POST.get('nombre')
+        usuario.direccion_envio = request.POST.get('direccion')
+        usuario.telefono_envio = request.POST.get('telefono')
+        usuario.ciudad_envio = request.POST.get('ciudad')
+        usuario.codigo_postal_envio = request.POST.get('codigo_postal')
+        usuario.save()
+
+        metodo_pago = request.POST.get('metodo_pago', 'credit_card')
+        orden = Orden.objects.create(
+            usuario=usuario,
+            numero_orden=generar_numero_orden(),
+            estado='pending',
+            metodo_pago=metodo_pago,
+            direccion_envio=usuario.direccion_envio,
+            direccion_facturacion=usuario.direccion_envio,
+            total=total
+        )
+
+        ItemCarrito.objects.filter(carrito=carrito).delete()
+        request.session['cantidades_temporales'] = {}
+
+        return redirect('confirmacion_compra', orden_id=orden.id)
+
+    # ✅ Este render solo se ejecuta si NO es POST
+    return render(request, 'carrito/checkout.html', {
         'items': items,
         'subtotal': subtotal,
         'envio': envio,
-        'total': total
-    }
-    
-    return render(request, 'carrito/checkout.html', context)
+        'total': total,
+        'usuario': usuario
+    })
 
+
+@login_required
+def actualizar_cantidad(request, item_id):
+    if request.method == 'POST':
+        try:
+            item = ItemCarrito.objects.get(id=item_id, carrito__usuario=request.user)
+            nueva_cantidad = int(request.POST.get('cantidad', 1))
+
+            # Guardar en sesión temporalmente
+            if 'cantidades_temporales' not in request.session:
+                request.session['cantidades_temporales'] = {}
+
+            request.session['cantidades_temporales'][str(item_id)] = nueva_cantidad
+            request.session.modified = True
+
+            # Recalcular totales
+            carrito = item.carrito
+            items = ItemCarrito.objects.filter(carrito=carrito)
+            subtotal_total = 0
+            for i in items:
+                cantidad = request.session['cantidades_temporales'].get(str(i.id), i.cantidad)
+                subtotal_total += i.producto.precio * cantidad
+
+            subtotal_item = item.producto.precio * nueva_cantidad
+            envio = 80
+            total = subtotal_total + envio
+
+            return JsonResponse({
+                'success': True,
+                'nuevoSubtotal': f"${subtotal_item:.2f}",
+                'subtotalTotal': f"${subtotal_total:.2f}",
+                'total': f"${total:.2f}"
+            })
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Método no permitido'})
+
+
+
+@login_required
+def confirmacion_compra(request, orden_id):
+    orden = get_object_or_404(Orden, id=orden_id, usuario=request.user)
+    return render(request, 'carrito/confirmacion.html', {'orden': orden})

@@ -1,12 +1,15 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+
 class UsuarioPersonalizado(AbstractUser):
     OPCIONES_MEMBRESIA = [
         ('regular', 'Usuario regular'),
         ('premium', 'Usuario Premium'),
     ]
-    
+
     tipo_membresia = models.CharField(
         max_length=20,
         choices=OPCIONES_MEMBRESIA,
@@ -19,12 +22,19 @@ class UsuarioPersonalizado(AbstractUser):
         blank=True
     )
     email_institucional = models.EmailField(null=True, blank=True)
-    
+
+    # 🏠 Datos de envío integrados
+    nombre_envio = models.CharField(max_length=100, blank=True, null=True)
+    direccion_envio = models.TextField(blank=True, null=True)
+    telefono_envio = models.CharField(max_length=20, blank=True, null=True)
+    ciudad_envio = models.CharField(max_length=50, blank=True, null=True)
+    codigo_postal_envio = models.CharField(max_length=10, blank=True, null=True)
+
     groups = models.ManyToManyField(
         'auth.Group',
         verbose_name='groups',
         blank=True,
-        help_text=' El grupo al que pertenece este usuario. El usuario obtendra todos  los permisos que le brinde cada uno de sus grupos.',
+        help_text='El grupo al que pertenece este usuario. El usuario obtendrá todos los permisos que le brinde cada uno de sus grupos.',
         related_name="usuario_personalizado_set",
         related_query_name="usuario_personalizado",
     )
@@ -32,13 +42,22 @@ class UsuarioPersonalizado(AbstractUser):
         'auth.Permission',
         verbose_name='user permisos de usuario',
         blank=True,
-        help_text='Permisos especificos para este usuario.',
+        help_text='Permisos específicos para este usuario.',
         related_name="usuario_personalizado_set",
         related_query_name="usuario_personalizado",
     )
-    
+
     def es_miembro_educativo(self):
         return self.tipo_membresia in ['teacher', 'institution']
+
+    def tiene_datos_envio(self):
+        return all([
+            self.nombre_envio,
+            self.direccion_envio,
+            self.telefono_envio,
+            self.ciudad_envio,
+            self.codigo_postal_envio
+        ])
     
 class Producto(models.Model):
     OPCIONES_MATERIAL = [
@@ -214,7 +233,7 @@ class Orden(models.Model):
     fecha_actualizacion = models.DateTimeField(auto_now=True)
     email_enviado = models.BooleanField(default=False)
     
-    def _str_(self):
+    def __str__(self):
         return self.numero_orden
 
 class ItemOrden(models.Model):
@@ -277,3 +296,6 @@ class BlogPost(models.Model):
     
     class Meta:
         ordering = ['-fecha_publicacion']
+
+
+

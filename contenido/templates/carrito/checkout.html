@@ -3,156 +3,177 @@
 
 {% block content %}
 <div class="container">
-    <!-- Header (heredado de base.html) -->
-    
     <h1 style="margin-bottom: 30px;">Finalizar Compra</h1>
     
     <div style="display: grid; grid-template-columns: 1fr 350px; gap: 40px;">
         <!-- Form Section -->
-        <div>
-            <div class="form-container">
-                <h2 style="margin-bottom: 20px;">Información de Envío</h2>
-                
-                    {% csrf_token %}
-                    
-                    <div class="form-group">
-                        <label class="form-label">Nombre Completo</label>
-                        <input type="text" class="form-input" name="nombre_completo" placeholder="Juan Pérez" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Correo Electrónico</label>
-                        <input type="email" class="form-input" name="email" placeholder="juan@ejemplo.com" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Dirección</label>
-                        <input type="text" class="form-input" name="direccion" placeholder="Calle Principal 123" required>
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div class="form-group">
-                            <label class="form-label">Ciudad</label>
-                            <input type="text" class="form-input" name="ciudad" placeholder="Ciudad" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Código Postal</label>
-                            <input type="text" class="form-input" name="codigo_postal" placeholder="12345" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Teléfono</label>
-                        <input type="tel" class="form-input" name="telefono" placeholder="+1 234 567 890" required>
-                    </div>
-                    
-                    <h2 style="margin: 30px 0 20px;">Método de Pago</h2>
-                    
-                    <div class="form-group">
-                        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                            <input type="radio" id="credit" name="metodo_pago" value="tarjeta" checked>
-                            <label for="credit">Tarjeta de Crédito/Débito</label>
-                        </div>
-                        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                            <input type="radio" id="paypal" name="metodo_pago" value="paypal">
-                            <label for="paypal">PayPal</label>
-                        </div>
-                        <div style="display: flex; gap: 15px;">
-                            <input type="radio" id="transfer" name="metodo_pago" value="transferencia">
-                            <label for="transfer">Transferencia Bancaria</label>
-                        </div>
-                    </div>
-                    
-                    <div id="credit-card-form">
-                        <div class="form-group">
-                            <label class="form-label">Número de Tarjeta</label>
-                            <input type="text" class="form-input" name="numero_tarjeta" placeholder="1234 5678 9012 3456">
-                        </div>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                            <div class="form-group">
-                                <label class="form-label">Fecha de Expiración</label>
-                                <input type="text" class="form-input" name="expiracion_tarjeta" placeholder="MM/AA">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">CVV</label>
-                                <input type="text" class="form-input" name="cvv_tarjeta" placeholder="123">
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Nombre en la Tarjeta</label>
-                            <input type="text" class="form-input" name="nombre_tarjeta" placeholder="JUAN PEREZ">
-                        </div>
-                    </div>
-                    
-                    <!-- Botón de confirmación movido al resumen del pedido -->
-                </form>
-            </div>
-        </div>
-        
-        <!-- Order Summary -->
 <div>
-    <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: sticky; top: 20px;">
-        <h2 style="margin-bottom: 20px;">Resumen del Pedido</h2>
+    <div class="form-container">
+        <h2 style="margin-bottom: 20px;">Información de Envío</h2>
         
-        <div style="margin-bottom: 20px;">
-            {% for item in items %}
-            <div style="display: flex; justify-content: space-between; margin-bottom: 15px; align-items: center;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    {% with item.producto.imagenes.all|first as imagen_principal %}
-                        {% if imagen_principal %}
-                        <img src="{{ imagen_principal.imagen.url }}" 
-                             alt="{{ item.producto.nombre }}"
-                             style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
-                        {% endif %}
-                    {% endwith %}
-                    <div>
-                        <div style="font-weight: 500;">{{ item.producto.nombre }}</div>
-                        <div style="font-size: 13px; color: #666;">Código: {{ item.producto.codigo }}</div>
+        <form method="POST" action="" id="checkout-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label">Nombre Completo</label>
+                <input type="text" class="form-input" name="nombre" required
+                       value="{{ usuario.nombre_envio|default:'' }}"
+                       style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Correo Electrónico</label>
+                <input type="email" class="form-input" name="email" required
+                       value="{{ usuario.email|default:'' }}"
+                       style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Dirección</label>
+                <input type="text" class="form-input" name="direccion" required
+                       value="{{ usuario.direccion_envio|default:'' }}"
+                       style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label class="form-label">Ciudad</label>
+                    <input type="text" class="form-input" name="ciudad" required
+                           value="{{ usuario.ciudad_envio|default:'' }}"
+                           style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Código Postal</label>
+                    <input type="text" class="form-input" name="codigo_postal" required
+                           value="{{ usuario.codigo_postal_envio|default:'' }}"
+                           style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Teléfono</label>
+                <input type="tel" class="form-input" name="telefono" required
+                       value="{{ usuario.telefono_envio|default:'' }}"
+                       style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+            </div>
+            
+            <h2 style="margin: 30px 0 20px;">Método de Pago</h2>
+            
+            <div class="form-group">
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <input type="radio" id="credit" name="metodo_pago" value="tarjeta" checked>
+                    <label for="credit">Tarjeta de Crédito/Débito</label>
+                </div>
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <input type="radio" id="paypal" name="metodo_pago" value="paypal">
+                    <label for="paypal">PayPal</label>
+                </div>
+                <div style="display: flex; gap: 15px;">
+                    <input type="radio" id="transfer" name="metodo_pago" value="transferencia">
+                    <label for="transfer">Transferencia Bancaria</label>
+                </div>
+            </div>
+            
+            <div id="credit-card-form">
+                <div class="form-group">
+                    <label class="form-label">Número de Tarjeta</label>
+                    <input type="text" class="form-input" name="numero_tarjeta"
+                           style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">Fecha de Expiración</label>
+                        <input type="text" class="form-input" name="expiracion_tarjeta" placeholder="MM/AA"
+                               style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">CVV</label>
+                        <input type="text" class="form-input" name="cvv_tarjeta"
+                               style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
                     </div>
                 </div>
-                <div style="text-align: right;">
-                    <div>${{ item.precio_unitario|floatformat:2 }}</div>
-                    <div style="font-size: 14px; color: #666;">x{{ item.cantidad }}</div>
-                    <div style="font-weight: 500;">${{ item.subtotal|floatformat:2 }}</div>
+                
+                <div class="form-group">
+                    <label class="form-label">Nombre en la Tarjeta</label>
+                    <input type="text" class="form-input" name="nombre_tarjeta"
+                           style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
                 </div>
             </div>
-            {% empty %}
-            <div style="text-align: center; padding: 20px; color: #666;">
-                No hay productos en tu carrito
-            </div>
-            {% endfor %}
-            
-            <div style="display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
-                <span>Subtotal</span>
-                <span>${{ subtotal|floatformat:2 }}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin: 10px 0;">
-                <span>Envío</span>
-                <span>${{ envio|floatformat:2 }}</span>
-            </div>
-        </div>
-        
-        <div style="border-top: 1px solid #e0e0e0; padding-top: 15px; margin-bottom: 25px;">
-            <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 18px;">
-                <span>Total</span>
-                <span>${{ total|floatformat:2 }}</span>
-            </div>
-        </div>
-        
-        <button type="submit" form="checkout-form" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 18px;">
-            Confirmar Pedido
-        </button>
+        </form>
     </div>
 </div>
+        
+        <!-- Order Summary -->
+        <div>
+            <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: sticky; top: 20px;">
+                <h2 style="margin-bottom: 20px;">Resumen del Pedido</h2>
+                
+                {% if items %}
+                <div style="margin-bottom: 20px;">
+                    {% for item in items %}
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 15px; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            {% if item.imagen_principal %}
+                            <img src="{{ item.imagen_principal.imagen.url }}" 
+                                 alt="{{ item.producto.nombre }}"
+                                 style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                            {% else %}
+                            <div style="width: 50px; height: 50px; background: #f0f0f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                                🎲
+                            </div>
+                            {% endif %}
+                            <div>
+                                <div style="font-weight: 500;">{{ item.producto.nombre }}</div>
+                                <div style="font-size: 13px; color: #666;">Código: {{ item.producto.codigo }}</div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div>${{ item.precio_unitario|floatformat:2 }}</div>
+                            <div style="font-size: 14px; color: #666;">x{{ item.cantidad }}</div>
+                            <div style="font-weight: 500;">${{ item.subtotal|floatformat:2 }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <div style="display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+                        <span>Subtotal</span>
+                        <span>${{ subtotal|floatformat:2 }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+                        <span>Envío</span>
+                        <span>${{ envio|floatformat:2 }}</span>
+                    </div>
+                </div>
+                
+                <div style="border-top: 1px solid #e0e0e0; padding-top: 15px; margin-bottom: 25px;">
+                    <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 18px;">
+                        <span>Total</span>
+                        <span>${{ total|floatformat:2 }}</span>
+                    </div>
+                </div>
+                
+                <button type="submit" form="checkout-form" style="width: 100%; padding: 15px; font-size: 18px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                    Confirmar Pedido
+                </button>
+                
+                <p style="font-size: 14px; color: #666; margin-top: 15px; text-align: center;">
+                    Al hacer clic en "Confirmar Pedido", aceptas nuestros <a href="#" style="color: #667eea;">Términos y Condiciones</a>
+                </p>
+                {% else %}
+                <div style="text-align: center; padding: 30px 0;">
+                    <p style="margin-bottom: 20px; color: #666;">No hay productos en tu carrito</p>
+                    <a href="{% url 'catalogo' %}" style="padding: 10px 15px; background: #e2e8f0; color: #4a5568; border-radius: 4px; text-decoration: none;">Ir al catálogo</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-// Mostrar/ocultar formulario de tarjeta según método de pago seleccionado
 document.addEventListener('DOMContentLoaded', function() {
     const paymentMethods = document.querySelectorAll('input[name="metodo_pago"]');
     const creditCardForm = document.getElementById('credit-card-form');

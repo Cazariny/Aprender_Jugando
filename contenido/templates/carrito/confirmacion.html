@@ -1,0 +1,31 @@
+
+<div style="max-width: 600px; margin: 40px auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); font-family: 'Segoe UI', sans-serif;">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h2 style="color: #4CAF50; font-size: 28px; margin-bottom: 10px;">¡Gracias por tu compra!</h2>
+        <p style="font-size: 16px; color: #555;">Tu pedido ha sido registrado correctamente.</p>
+    </div>
+
+    <div style="border-top: 1px solid #eee; padding-top: 20px;">
+        <p style="font-size: 18px; margin-bottom: 10px;"><strong>Número de orden:</strong> #{{ orden.id }}</p>
+        <p style="font-size: 18px; margin-bottom: 10px;"><strong>Total pagado:</strong> ${{ orden.total|floatformat:2 }}</p>
+        <p style="font-size: 18px; margin-bottom: 10px;"><strong>Método de pago:</strong> {{ orden.metodo_pago }}</p>
+        <p style="font-size: 18px; margin-bottom: 10px;"><strong>Fecha:</strong> {{ orden.fecha|date:"d/m/Y H:i" }}</p>
+    </div>
+
+    <div style="margin-top: 30px;">
+        <h3 style="font-size: 20px; color: #333; margin-bottom: 15px;">🛒 Productos comprados</h3>
+        <ul style="list-style: none; padding: 0;">
+            {% for item in orden.itemorden_set.all %}
+            <li style="padding: 10px 0; border-bottom: 1px solid #eee;">
+                <strong>{{ item.producto.nombre }}</strong><br>
+                Cantidad: {{ item.cantidad }}<br>
+                Precio unitario: ${{ item.precio_unitario|floatformat:2 }}<br>
+                Subtotal: ${{ item.subtotal|floatformat:2 }}
+            </li>
+        </ul>
+    </div>
+
+    <div style="margin-top: 30px; text-align: center;">
+        <a href="{% url 'home' %}" style="display: inline-block; padding: 12px 24px; background: #4CAF50; color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">Volver al inicio</a>
+    </div>
+</div>
