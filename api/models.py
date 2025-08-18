@@ -1,9 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
 class UsuarioPersonalizado(AbstractUser):
     OPCIONES_MEMBRESIA = [
         ('regular', 'Usuario regular'),
