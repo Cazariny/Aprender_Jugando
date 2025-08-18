@@ -492,3 +492,6 @@ def actualizar_cantidad(request, item_id):
 def confirmacion_compra(request, orden_id):
     orden = get_object_or_404(Orden, id=orden_id, usuario=request.user)
     return render(request, 'carrito/confirmacion.html', {'orden': orden})
+
+def contacto(request):
+    return render(request, "contacto/contacto.html")
