@@ -21,7 +21,6 @@ class UsuarioPersonalizado(AbstractUser):
     )
     email_institucional = models.EmailField(null=True, blank=True)
 
-    # 🏠 Datos de envío integrados
     nombre_envio = models.CharField(max_length=100, blank=True, null=True)
     direccion_envio = models.TextField(blank=True, null=True)
     telefono_envio = models.CharField(max_length=20, blank=True, null=True)
@@ -47,6 +46,8 @@ class UsuarioPersonalizado(AbstractUser):
 
     def es_miembro_educativo(self):
         return self.tipo_membresia in ['teacher', 'institution']
+    def es_premium(self):
+        return self.tipo_membresia == 'premium'
 
     def tiene_datos_envio(self):
         return all([

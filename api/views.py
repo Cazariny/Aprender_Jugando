@@ -43,11 +43,6 @@ def top10(request):
     }
     return render(request, 'products/top10.html', context)
 
-
-def terminos_condiciones(request):
-    return render(request, 'TYC/terminosCondiciones.html')
-
-
 def terminos_condiciones(request):
     return render(request, 'TYC/terminosCondiciones.html')
 
@@ -96,11 +91,9 @@ def BlogDetail(request, slug):
             messages.error(request, 'Debes iniciar sesión para comentar.')
             return redirect('login')
 
-    # Actualizar vistas del post
     BlogPost.objects.filter(pk=post.pk).update(vistas=F('vistas') + 1)
     post.refresh_from_db()
 
-    # Obtener comentarios del post
     comentarios = Comentarios.objects.filter(post=post).order_by('-created_at')
 
     return render(request, "blog/blog_detail.html", {
@@ -145,9 +138,7 @@ def registro(request):
         last_name = request.POST.get('last_name')
         password1 = request.POST.get('password1')
         password2 = request.POST.get('password2')
-        tipo_form = request.POST.get('tipo')  
-
-        tipo_membresia = 'regular' if tipo_form == 'estandar' else 'teacher'
+        tipo_membresia = 'regular'
 
         if password1 != password2:
             messages.error(request, "Las contraseñas no coinciden.")
@@ -340,17 +331,18 @@ def detalle_producto(request, producto_id):
             messages.warning(request, 'Ya has enviado una reseña para este producto.', extra_tags='header')
     
     precio_con_descuento = None
-    if request.user.is_authenticated and request.user.es_miembro_educativo():
-        descuento = producto.descuento_para_miembros / 100
-        precio_con_descuento = producto.precio * (1 - descuento)
+    if request.user.is_authenticated:
+        if request.user.es_premium() or request.user.es_miembro_educativo():
+            descuento = producto.descuento_para_miembros / 100
+            precio_con_descuento = producto.precio * (1 - descuento)
     
     context = {
         'producto': producto,
         'precio_con_descuento': precio_con_descuento,
         'resenas': producto.resenas.all().order_by('-fecha_creacion'),
+        'es_usuario_premium': request.user.is_authenticated and request.user.es_premium(),
     }
     return render(request, 'products/producto.html', context)
-
 
 def agregar_al_carrito(request, producto_id):
     if request.method == 'POST':
@@ -551,26 +543,23 @@ from django.db import transaction
 def checkout_membresia(request):
     usuario = request.user
     
-    # Precio fijo de la membresía premium
     PRECIO_MEMBRESIA = 19.99
 
     if request.method == 'POST':
         with transaction.atomic():
             metodo_pago = request.POST.get('metodo_pago', 'credit_card')
             
-            # Crear una orden para la membresía
             orden = Orden.objects.create(
                 usuario=usuario,
                 numero_orden=generar_numero_orden(),
-                estado='completed',  # Se asume que el pago se completa inmediatamente para un producto digital
+                estado='completed',  
                 metodo_pago=metodo_pago,
-                direccion_envio='N/A', # No aplica para membresía
-                direccion_facturacion='N/A', # No aplica para membresía
+                direccion_envio='N/A', 
+                direccion_facturacion='N/A', 
                 total=PRECIO_MEMBRESIA
             )
             
-            # Actualizar el tipo de usuario a 'premium'
-            usuario.tipo_membresia = 'premium' # Se debe cambiar el atributo 'tipo_usuario' a 'tipo_membresia' como se define en models.py
+            usuario.tipo_membresia = 'premium' 
             usuario.save()
             
             messages.success(request, "¡Felicidades! Ahora eres un usuario Premium.")
