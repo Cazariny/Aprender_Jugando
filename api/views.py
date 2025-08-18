@@ -13,12 +13,11 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
-from django.db.models import Avg, Count
+from django.db.models import Avg, Count, Value, IntegerField, FloatField
 import uuid
 from django.db.models import Sum
 
 
-<<<<<<< HEAD
 def top10(request):
     # Obtener productos con al menos 1 reseña o todos si hay pocos
     productos = Producto.objects.filter(
@@ -46,10 +45,10 @@ def top10(request):
     }
     return render(request, 'products/top10.html', context)
 
-=======
+
 def terminos_condiciones(request):
     return render(request, 'TYC/terminosCondiciones.html')
->>>>>>> 7301f02746000ae999e001fa02e9b6baafbb0267
+
 def About(request):
     return render(request, "pages/about.html")
 

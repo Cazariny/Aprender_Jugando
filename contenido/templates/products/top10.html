@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Inicio - "Aprende Jugando"{% endblock %}
+{% block title %}Top Productos - "Aprende Jugando"{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -13,7 +13,7 @@
         <div class="col-md-6 mb-4">
             <div class="card h-100">
                 {% if producto.imagenes.exists %}
-                <img src="{{ producto.imagenes.first.imagen.url }}" class="card-img-top" alt="{{ producto.nombre }}">
+                <img src="{{ producto.imagenes.first.imagen.url }}" class="card-img-top" alt="{{ producto.nombre }}" style="height: 200px; object-fit: cover;">
                 {% endif %}
                 <div class="card-body">
                     <h2 class="h5 card-title">{{ producto.nombre }}</h2>
@@ -31,7 +31,8 @@
                             {% endfor %}
                         {% endwith %}
                         <span class="small">
-                            ({{ producto.cantidad_resenas }} reseña{{ producto.cantidad_resenas|pluralize }})
+                            ({{ producto.cantidad_resenas }} reseña{{ producto.cantidad_resenas|pluralize }})  
+                            – Promedio: {{ producto.promedio|floatformat:1 }}
                         </span>
                     </div>
                     
