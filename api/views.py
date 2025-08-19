@@ -347,24 +347,24 @@ def agregar_al_carrito(request, producto_id):
         producto = get_object_or_404(Producto, id=producto_id)
         cantidad = int(request.POST.get('cantidad', 1))
 
-        # 1. Get or create the user's cart
+        # Crear u obtener el carrito del usuario
         carrito, created = Carrito.objects.get_or_create(usuario=request.user)
 
-        # 2. Check if the product is already in the cart
+        # 2. Revisar si el producto ya esta en el carrito
         item, item_created = ItemCarrito.objects.get_or_create(
             carrito=carrito,
             producto=producto,
-            defaults={'cantidad': 0} # Set defaults to 0 to properly calculate total quantity
+            defaults={'cantidad': 0} # cantidad 0 por defecto
         )
 
-        # 3. Calculate total requested quantity and check against stock
+        # 3. Calcular el total dependiendo de la cantidad y verificar el stock
         total_cantidad_solicitada = item.cantidad + cantidad
         if total_cantidad_solicitada > producto.stock:
-            # Insufficient stock, display an error message
+            # Si no hay suficiente stock regresar error
             messages.error(request, f'No puedes agregar más de {producto.stock} unidades de este producto. Solo hay {producto.stock} en stock.', extra_tags='header')
             return redirect(request.META.get('HTTP_REFERER', '/'))
         else:
-            # 4. Update the item quantity and save
+            # 4. actualizar cantidad y guardar
             item.cantidad = total_cantidad_solicitada
             item.save()
             messages.success(request, 'Producto añadido al carrito.', extra_tags='header')
