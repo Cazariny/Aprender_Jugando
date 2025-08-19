@@ -13,30 +13,10 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
-from django.db.models import Avg, Count, Value, IntegerField, FloatField
+from django.db.models import Value, IntegerField, FloatField,Avg, Count, F, Sum
 import uuid
-from django.db.models import Sum
-from django.db import transaction
 
 
-
-def top10(request):
-    productos = Producto.objects.filter(
-        resenas__isnull=False,
-        esta_activo=True
-    ).annotate(
-        promedio=Avg('resenas__calificacion'),
-        total_resenas=Count('resenas')
-    ).filter(
-        total_resenas__gte=3 
-    ).order_by(
-        '-promedio', 
-        '-total_resenas'
-    )[:10]
-    
-    return render(request, 'productos/top10.html', {
-        'productos': productos,
-    })
 
 def terminos_condiciones(request):
     return render(request, 'TYC/terminosCondiciones.html')

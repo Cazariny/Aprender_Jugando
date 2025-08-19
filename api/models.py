@@ -3,6 +3,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models import Avg
+
 
 class UsuarioPersonalizado(AbstractUser):
     OPCIONES_MEMBRESIA = [
@@ -100,16 +102,16 @@ class Producto(models.Model):
         default=0,
         help_text="Porcentaje de descuento para miembros educativos"
     )
+    def promedio_calificacion(self):
+        return self.resenas.aggregate(Avg('calificacion'))['calificacion__avg'] or 0
     
-    @property
-    def cantidad_resenas(self):
-        return self.resenas.count()
-
-    def __str__(self):
+    def str(self):
         return self.nombre
     
-    def get_edad_recomendada(self):
-        return f"{self.edad_recomendada_min}-{self.edad_recomendada_max} años"
+    class Meta:
+        ordering = ['-fecha_creacion']
+        verbose_name = 'Producto'
+        verbose_name_plural ='Productos'
 
 class ImagenProducto(models.Model):
     producto = models.ForeignKey(
