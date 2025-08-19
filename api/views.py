@@ -19,29 +19,24 @@ from django.db.models import Sum
 
 
 def top10(request):
+    # Versión con debug incorporado
     productos = Producto.objects.filter(
+        resenas__isnull=False,
         esta_activo=True
     ).annotate(
-        num_resenas=Count('resenas'),
-        avg_rating=Avg('resenas__calificacion')
-    ).order_by('-avg_rating', '-num_resenas')
+        promedio=Avg('resenas__calificacion'),
+        total_res=Count('resenas')
+    ).order_by('-promedio')[:10]
     
-    if productos.filter(num_resenas__gt=0).count() < 10:
-        sin_resenas = Producto.objects.filter(
-            esta_activo=True,
-            resenas__isnull=True
-        ).annotate(
-            num_resenas=Value(0, output_field=IntegerField()),
-            avg_rating=Value(0, output_field=FloatField())
-        )[:10-productos.count()]
-        productos = list(productos) + list(sin_resenas)
+    # Debug en consola
+    print(f"Productos encontrados: {productos.count()}")
+    for p in productos:
+        print(f"{p.nombre}: {p.promedio} ({p.total_res} reseñas)")
     
-    context = {
-        'productos': productos[:10], 
-        'titulo': 'Top 10 Productos',
-        'subtitulo': 'Los juguetes educativos mejor valorados por nuestros clientes'
-    }
-    return render(request, 'products/top10.html', context)
+    return render(request, 'productos/top10.html', {
+        'productos': productos,
+        'rango_estrellas': range(1, 6)
+    })
 
 def terminos_condiciones(request):
     return render(request, 'TYC/terminosCondiciones.html')

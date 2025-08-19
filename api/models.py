@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
+
 class UsuarioPersonalizado(AbstractUser):
     OPCIONES_MEMBRESIA = [
         ('regular', 'Usuario regular'),
@@ -102,30 +104,12 @@ class Producto(models.Model):
     @property
     def cantidad_resenas(self):
         return self.resenas.count()
-    
-    def promedio_calificacion(self):
-        from django.db.models import Avg
-        return self.resenas.aggregate(Avg('calificacion'))['calificacion__avg'] or 0
-    
-    def get_estrellas(self):
-        promedio = self.promedio_calificacion()
-        entero = int(promedio)
-        decimal = promedio % 1 >= 0.5
-        vacio = 5 - entero - (1 if decimal else 0)
-        
-        return {
-            'enteros': [1] * entero,  # Lista con 'entero' elementos
-            'tiene_media': decimal,
-            'vacios': [1] * vacio     # Lista con 'vacio' elementos
-        }
+
+    def __str__(self):
+        return self.nombre
     
     def get_edad_recomendada(self):
         return f"{self.edad_recomendada_min}-{self.edad_recomendada_max} años"
-    
-    class Meta:
-        ordering = ['-fecha_creacion']
-        verbose_name = 'Producto'
-        verbose_name_plural = 'Productos'
 
 class ImagenProducto(models.Model):
     producto = models.ForeignKey(
