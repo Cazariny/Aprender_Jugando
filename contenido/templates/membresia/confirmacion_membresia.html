@@ -8,7 +8,6 @@
         <p style="font-size: 18px; margin-bottom: 10px;"><strong>Número de orden:</strong> #{{ orden.id }}</p>
         <p style="font-size: 18px; margin-bottom: 10px;"><strong>Total pagado:</strong> ${{ orden.total|floatformat:2 }}</p>
         <p style="font-size: 18px; margin-bottom: 10px;"><strong>Método de pago:</strong> {{ orden.metodo_pago }}</p>
-        <p style="font-size: 18px; margin-bottom: 10px;"><strong>Fecha:</strong> {{ orden.fecha|date:"d/m/Y H:i" }}</p>
     </div>
 
     <div style="margin-top: 30px; text-align: center;">

@@ -140,10 +140,25 @@
                         <span>Subtotal</span>
                         <span>${{ subtotal|floatformat:2 }}</span>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin: 10px 0;">
-                        <span>Envío</span>
-                        <span>${{ envio|floatformat:2 }}</span>
-                    </div>
+                    {% if es_usuario_miembro and descuento_total > 0 %}
+    <div style="display: flex; justify-content: space-between; margin: 10px 0; color: green;">
+        <span>Descuento aplicado</span>
+        <span>- ${{ descuento_total|floatformat:2 }}</span>
+    </div>
+{% endif %}
+
+{% if es_usuario_miembro %}
+    <div style="display: flex; justify-content: space-between; margin: 10px 0; color: green;">
+        <span>Envío Premium</span>
+        <span>Gratis</span>
+    </div>
+{% else %}
+    <div style="display: flex; justify-content: space-between; margin: 10px 0;">
+        <span>Envío</span>
+        <span>${{ envio|floatformat:2 }}</span>
+    </div>
+{% endif %}
+                  
                 </div>
                 
                 <div style="border-top: 1px solid #e0e0e0; padding-top: 15px; margin-bottom: 25px;">

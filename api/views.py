@@ -15,6 +15,8 @@ from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.db.models import Value, IntegerField, FloatField,Avg, Count, F, Sum
 import uuid
+from django.db import transaction
+from decimal import Decimal
 
 
 
@@ -341,48 +343,75 @@ def agregar_al_carrito(request, producto_id):
 
 
 @login_required
+
 def vista_carrito(request):
     usuario = request.user
     carrito = Carrito.objects.filter(usuario=usuario).first()
 
+    # Si no hay carrito, render vacío
     if not carrito:
         return render(request, 'carrito/carrito.html', {
-            'carrito': carrito,
+            'carrito': None,
             'items': [],
-            'subtotal': 0,
-            'envio': 0,
-            'total': 0
+            'subtotal': Decimal('0.00'),
+            'descuento_total': Decimal('0.00'),
+            'envio': Decimal('0.00'),
+            'total': Decimal('0.00'),
+            'tipo_membresia': getattr(usuario, 'tipo_membresia', 'regular'),
+            'es_usuario_miembro': False
         })
 
     cantidades_temporales = request.session.get('cantidades_temporales', {})
-    
     items = []
-    subtotal = 0
-    
+    subtotal = Decimal('0.00')
+    descuento_total = Decimal('0.00')
+
+    # Validar si el usuario tiene beneficios
+    es_usuario_miembro = usuario.is_authenticated and (
+        hasattr(usuario, 'es_premium') and usuario.es_premium() or
+        hasattr(usuario, 'es_miembro_educativo') and usuario.es_miembro_educativo()
+    )
+
     for item in ItemCarrito.objects.filter(carrito=carrito):
-        cantidad = cantidades_temporales.get(str(item.id), item.cantidad)
-        precio_item = item.producto.precio * cantidad
+        cantidad = int(cantidades_temporales.get(str(item.id), item.cantidad))
+        precio_base = item.producto.precio
+
+        # Aplicar descuento si corresponde
+        if es_usuario_miembro and item.producto.descuento_para_miembros:
+            porcentaje = item.producto.descuento_para_miembros / Decimal('100')
+            precio_unitario = precio_base * (Decimal('1.00') - porcentaje)
+            descuento_unitario = precio_base * porcentaje
+            descuento_total += descuento_unitario * Decimal(cantidad)
+        else:
+            precio_unitario = precio_base
+
+        precio_item = precio_unitario * Decimal(cantidad)
         subtotal += precio_item
-        
+
         items.append({
-            'item': item, 
+            'item': item,
             'producto': item.producto,
             'cantidad': cantidad,
             'precio_item': precio_item,
             'imagen_principal': item.producto.imagenes.filter(es_principal=True).first()
         })
 
-    PRECIO_ENVIO = 80
-    envio = PRECIO_ENVIO
+    # Envío según tipo de usuario
+    envio = Decimal('0.00') if es_usuario_miembro else Decimal('80.00')
     total = subtotal + envio
 
     return render(request, 'carrito/carrito.html', {
         'carrito': carrito,
         'items': items,
         'subtotal': subtotal,
+        'descuento_total': descuento_total,
         'envio': envio,
-        'total': total
+        'total': total,
+        'tipo_membresia': getattr(usuario, 'tipo_membresia', 'regular'),
+        'es_usuario_miembro': es_usuario_miembro
     })
+
+
 
 
 
@@ -404,6 +433,7 @@ def generar_numero_orden():
 @login_required
 def checkout(request):
     usuario = request.user
+    es_usuario_miembro = usuario.es_premium()
 
     cantidades_temporales = request.session.get('cantidades_temporales', {})
     carrito = Carrito.objects.filter(usuario=usuario).first()
@@ -411,23 +441,35 @@ def checkout(request):
         return redirect('vista_carrito')
 
     items = []
-    subtotal = 0
+    subtotal = Decimal('0.00')
+    descuento_total = Decimal('0.00')
 
     for item in ItemCarrito.objects.filter(carrito=carrito):
         cantidad = cantidades_temporales.get(str(item.id), item.cantidad)
-        precio_item = item.producto.precio * cantidad
+
+        # Calcular descuento por unidad si el usuario es premium
+        if es_usuario_miembro:
+            porcentaje_descuento = item.producto.descuento_para_miembros
+            descuento_unitario = item.producto.precio * (porcentaje_descuento / Decimal('100'))
+        else:
+            descuento_unitario = Decimal('0.00')
+
+        precio_unitario = item.producto.precio - descuento_unitario
+        precio_item = precio_unitario * cantidad
         subtotal += precio_item
+        descuento_total += descuento_unitario * cantidad
 
         items.append({
             'producto': item.producto,
             'cantidad': cantidad,
             'precio_unitario': item.producto.precio,
+            'descuento_unitario': descuento_unitario,
             'subtotal': precio_item,
             'imagen_principal': item.producto.imagenes.filter(es_principal=True).first()
         })
 
-    PRECIO_ENVIO = 80
-    envio = PRECIO_ENVIO
+    PRECIO_ENVIO = Decimal('80.00')
+    envio = Decimal('0.00') if es_usuario_miembro else PRECIO_ENVIO
     total = subtotal + envio
 
     if request.method == 'POST':
@@ -459,8 +501,11 @@ def checkout(request):
         'subtotal': subtotal,
         'envio': envio,
         'total': total,
-        'usuario': usuario
+        'usuario': usuario,
+        'es_usuario_miembro': es_usuario_miembro,
+        'descuento_total': descuento_total
     })
+
 
 
 @login_required

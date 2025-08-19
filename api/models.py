@@ -190,7 +190,7 @@ class ItemCarrito(models.Model):
     def subtotal(self):
         if self.carrito.usuario.es_miembro_educativo():
             descuento = self.producto.descuento_para_miembros / 100
-            precio_con_descuento = self.producto.precio * (1 - descuento)
+            precio_con_descuento = self.producto.precio * (descuento)
             return precio_con_descuento * self.cantidad
         return self.producto.precio * self.cantidad
 
@@ -241,7 +241,7 @@ class ItemOrden(models.Model):
         on_delete=models.CASCADE,
         related_name='items'
     )
-    producto = models.ForeignKey(Producto, on_delete=models.PROTECT)
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     cantidad = models.PositiveIntegerField()
     precio = models.DecimalField(max_digits=10, decimal_places=2)
     

@@ -49,7 +49,7 @@
                     min="1" 
                     data-item-id="{{ item.item.id }}"
                     style="width: 60px; padding: 8px; border-radius: 6px; border: 1px solid #ddd;"></td>
-                <td id="subtotal-item-{{ item.item.id }}">${{ item.precio_item }}</td>
+                <td id="subtotal-item-{{ item.item.id }}">${{ item.precio_item|floatformat:2 }}</td>
                 <td>
                 <form method="POST" action="{% url 'eliminar_del_carrito' item.item.id %}">
                     {% csrf_token %}
@@ -104,17 +104,29 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="cart-summary">
         <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
             <span>Subtotal:</span>
-            <span id="subtotal">${{ subtotal }}</span>
-
+            <span id="subtotal">${{ subtotal|floatformat:2 }}</span>
         </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-            <span>Envío:</span>
-           <span id="envio">${{ envio }}</span>
+        {% if tipo_membresia == 'premium' %}
+    {% if es_usuario_miembro and descuento_total > 0 %}
+    <div style="display: flex; justify-content: space-between; margin-bottom: 15px; color: green;">
+        <span>Descuento aplicado:</span>
+        <span id="descuento">- ${{ descuento_total|floatformat:2 }}</span>
+    </div>
+{% endif %}
+    <div style="display: flex; justify-content: space-between; margin-bottom: 15px; color: green;">
+        <span>Envío Premium:</span>
+        <span id="envio">Gratis</span>
+    </div>
+{% else %}
+    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+        <span>Envío:</span>
+        <span id="envio">${{ envio }}</span>
+    </div>
+{% endif %}
 
-        </div>
         <div style="display: flex; justify-content: space-between; font-size: 20px; font-weight: 600;">
             <span>Total:</span>
-            <span id="total">${{ total }}</span>
+            <span id="total">${{ total|floatformat:2 }}</span>
 
         </div>
 
