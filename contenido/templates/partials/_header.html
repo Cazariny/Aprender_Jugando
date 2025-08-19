@@ -5,7 +5,10 @@
         <a href="{% url "catalogo" %}" class="nav-item {% if request.resolver_match.url_name == 'catalog' %}active{% endif %}">Catálogo</a>
         <a href="{% url "Blog" %}" class="nav-item {% if request.resolver_match.url_name == 'blog' %}active{% endif %}">Blog</a>
         <a href="{% url "acerca" %}" class="nav-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">Nosotros</a>
-        <a href="{% url "membresia" %}" class="nav-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">Membresia</a>
+        {% if not user.is_authenticated or not user.tipo_membresia == 'premium' %}
+            <a href="{% url "membresia" %}" class="nav-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">Membresia</a>
+        {% endif %}
+
     </nav>
     <div class="user-actions">
         {% if user.is_authenticated %}

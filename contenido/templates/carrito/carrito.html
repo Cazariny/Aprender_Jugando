@@ -1,142 +1,219 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block content %}
+{% extends 'base.html' %} {% load static %} {% block content %}
 <div class="container">
-    <h1 style="margin-bottom: 30px;">Tu Carrito de Compras</h1>
-    <table class="cart-table">
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Precio</th>
-                <th>Cantidad</th>
-                <th>Subtotal</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in items %}
-            <tr>
-                <td>
-                    <div style="display: flex; align-items: center; gap: 15px;">
-    <!-- Contenedor de la imagen -->
-    <div style="width: 60px; height: 60px; border-radius: 8px; overflow: hidden; background: #f0f0f0;">
-        {% with item.producto.imagenes.all|first as imagen_principal %}
-            {% if imagen_principal %}
-                <img 
-                    src="{{ imagen_principal.imagen.url }}" 
-                    alt="{{ item.producto.nombre }}"
-                    style="width: 100%; height: 100%; object-fit: cover;"
-                >
-            {% else %}
-                <!-- Fallback si no hay imágenes -->
-                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 24px;">
-                    {{ item.producto.icono|default:"🎲" }}
-                </div>
-            {% endif %}
-        {% endwith %}
-    </div>
-    <div>
-        <div style="font-weight: 600;">{{ item.producto.nombre }}</div>
-        <div style="font-size: 14px; color: #666;">Código: {{ item.producto.codigo }}</div>
-    </div>
-</div>
-                </td>
-                <td>${{ item.producto.precio }}</td>
-                <td>
-                <input type="number" 
-                    value="{{ item.cantidad }}" 
-                    min="1" 
-                    data-item-id="{{ item.item.id }}"
-                    style="width: 60px; padding: 8px; border-radius: 6px; border: 1px solid #ddd;"></td>
-                <td id="subtotal-item-{{ item.item.id }}">${{ item.precio_item|floatformat:2 }}</td>
-                <td>
-                <form method="POST" action="{% url 'eliminar_del_carrito' item.item.id %}">
-                    {% csrf_token %}
-                    <button type="submit">🗑️</button>
-                </form>
-                </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="5">Tu carrito está vacío.</td></tr>
-            {% endfor %}
-            
-            {% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    function actualizarCantidad(itemId, nuevaCantidad) {
-        fetch(`/actualizar-cantidad/${itemId}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: `cantidad=${nuevaCantidad}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Actualizar subtotal del producto
-                const subtotalItem = document.querySelector(`#subtotal-item-${itemId}`);
-                if (subtotalItem) subtotalItem.textContent = data.nuevoSubtotal;
+  <h1 style="margin-bottom: 30px">Tu Carrito de Compras</h1>
+  <table class="cart-table">
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Precio</th>
+        <th>Cantidad</th>
+        <th>Subtotal</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>
+          <div style="display: flex; align-items: center; gap: 15px">
+            <!-- Contenedor de la imagen -->
+            <div
+              style="
+                width: 60px;
+                height: 60px;
+                border-radius: 8px;
+                overflow: hidden;
+                background: #f0f0f0;
+              "
+            >
+              {% with item.producto.imagenes.all|first as imagen_principal %} 
+              
+              {% if imagen_principal %}
+              <img
+                src="{{ imagen_principal.imagen.url }}"
+                alt="{{ item.producto.nombre }}"
+                style="width: 100%; height: 100%; object-fit: cover"
+              />
+              {% else %}
+              <!-- Fallback si no hay imágenes -->
+              <div
+                style="
+                  width: 100%;
+                  height: 100%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 24px;
+                "
+              >
+                {{ item.producto.icono|default:"🎲" }}
+              </div>
+              {% endif %} 
+              
+              {% endwith %}
+            </div>
+            <div>
+              <div style="font-weight: 600">{{ item.producto.nombre }}</div>
+              <div style="font-size: 14px; color: #666">
+                Código: {{ item.producto.codigo }}
+              </div>
+            </div>
+          </div>
+        </td>
+        <td>${{ item.producto.precio }}</td>
+        <td>
+          <input
+            type="number"
+            value="{{ item.cantidad }}"
+            min="1"
+            data-item-id="{{ item.item.id }}"
+            style="
+              width: 60px;
+              padding: 8px;
+              border-radius: 6px;
+              border: 1px solid #ddd;
+            "
+          />
+        </td>
+        <td id="subtotal-item-{{ item.item.id }}">
+          ${{ item.precio_item|floatformat:2 }}
+        </td>
+        <td>
+          <form
+            method="POST"
+            action="{% url 'eliminar_del_carrito' item.item.id %}"
+          >
+            {% csrf_token %}
+            <button type="submit">🗑️</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5">Tu carrito está vacío.</td>
+      </tr>
+      {% endfor %} 
+      
+      {% block scripts %}
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          function actualizarCantidad(itemId, nuevaCantidad) {
+            fetch(`/actualizar-cantidad/${itemId}/`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": "{{ csrf_token }}",
+              },
+              body: `cantidad=${nuevaCantidad}`,
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  // Actualizar subtotal del producto
+                  const subtotalItem = document.querySelector(
+                    `#subtotal-item-${itemId}`
+                  );
+                  if (subtotalItem)
+                    subtotalItem.textContent = data.nuevoSubtotal;
 
-                // Actualizar resumen del carrito
-                document.querySelector('#subtotal').textContent = data.subtotalTotal;
-                document.querySelector('#total').textContent = data.total;
-            } else {
-                alert('Error: ' + data.error);
-            }
+                  // Actualizar resumen del carrito
+                  document.querySelector("#subtotal").textContent =
+                    data.subtotalTotal;
+                  document.querySelector("#total").textContent = data.total;
+                } else {
+                  // Si hay un error, mostrar una alerta y restablecer el input
+                  alert("Error: " + data.error);
+                  const inputElement = document.querySelector(
+                    `input[data-item-id="${itemId}"]`
+                  );
+                  if (inputElement) {
+                    inputElement.value = data.stock_disponible;
+                  }
+                }
+              });
+          }
+
+          document.querySelectorAll('input[type="number"]').forEach((input) => {
+            input.addEventListener("change", function () {
+              const itemId = this.getAttribute("data-item-id");
+              // Asegúrate de que la cantidad no sea menor que 1
+              const nuevaCantidad = Math.max(1, parseInt(this.value, 10));
+              this.value = nuevaCantidad; // Actualiza el valor en el campo
+              actualizarCantidad(itemId, nuevaCantidad);
+            });
+          });
         });
-    }
+      </script>
+      {% endblock %}
+    </tbody>
+  </table>
 
-    document.querySelectorAll('input[type="number"]').forEach(input => {
-        input.addEventListener('change', function() {
-            const itemId = this.getAttribute('data-item-id');
-            actualizarCantidad(itemId, this.value);
-        });
-    });
-});
-</script>
-{% endblock %}
-        </tbody>
-    </table>
-
-    <div class="cart-summary">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-            <span>Subtotal:</span>
-            <span id="subtotal">${{ subtotal|floatformat:2 }}</span>
-        </div>
-        {% if tipo_membresia == 'premium' %}
+  <div class="cart-summary">
+    <div
+      style="display: flex; justify-content: space-between; margin-bottom: 15px"
+    >
+      <span>Subtotal:</span>
+      <span id="subtotal">${{ subtotal|floatformat:2 }}</span>
+    </div>
+    {% if tipo_membresia == 'premium' %} 
     {% if es_usuario_miembro and descuento_total > 0 %}
-    <div style="display: flex; justify-content: space-between; margin-bottom: 15px; color: green;">
-        <span>Descuento aplicado:</span>
-        <span id="descuento">- ${{ descuento_total|floatformat:2 }}</span>
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        color: green;
+      "
+    >
+      <span>Descuento aplicado:</span>
+      <span id="descuento">- ${{ descuento_total|floatformat:2 }}</span>
     </div>
-{% endif %}
-    <div style="display: flex; justify-content: space-between; margin-bottom: 15px; color: green;">
-        <span>Envío Premium:</span>
-        <span id="envio">Gratis</span>
-    </div>
-{% else %}
-    <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-        <span>Envío:</span>
-        <span id="envio">${{ envio }}</span>
-    </div>
-{% endif %}
-
-        <div style="display: flex; justify-content: space-between; font-size: 20px; font-weight: 600;">
-            <span>Total:</span>
-            <span id="total">${{ total|floatformat:2 }}</span>
-
-        </div>
-
-        <div style="display: flex; justify-content: space-between; margin-top: 30px;">
-    <a href="{% url 'catalogo' %}" class="btn btn-secondary">Seguir Comprando</a>
-
-    {% if items %}
-        <a href="{% url 'checkout' %}" class="btn btn-primary">Proceder al Pago</a>
     {% endif %}
-</div>
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        color: green;
+      "
+    >
+      <span>Envío Premium:</span>
+      <span id="envio">Gratis</span>
     </div>
+    {% else %}
+    <div
+      style="display: flex; justify-content: space-between; margin-bottom: 15px"
+    >
+      <span>Envío:</span>
+      <span id="envio">${{ envio }}</span>
+    </div>
+    {% endif %}
+
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        font-size: 20px;
+        font-weight: 600;
+      "
+    >
+      <span>Total:</span>
+      <span id="total">${{ total|floatformat:2 }}</span>
+    </div>
+
+    <div
+      style="display: flex; justify-content: space-between; margin-top: 30px"
+    >
+      <a href="{% url 'catalogo' %}" class="btn btn-secondary"
+        >Seguir Comprando</a
+      >
+
+      {% if items %}
+      <a href="{% url 'checkout' %}" class="btn btn-primary"
+        >Proceder al Pago</a
+      >
+      {% endif %}
+    </div>
+  </div>
 </div>
 {% endblock %}

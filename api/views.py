@@ -1,4 +1,5 @@
 from django.views.generic import DetailView
+from datetime import datetime
 from django.db.models import F
 from .models import BlogPost, BlogCategory, Producto, Carrito, ItemCarrito, Carrito, Resena, Orden, Comentarios
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -321,29 +322,56 @@ def detalle_producto(request, producto_id):
     }
     return render(request, 'products/producto.html', context)
 
+# def agregar_al_carrito(request, producto_id):
+#     if request.method == 'POST':
+#         producto = get_object_or_404(Producto, id=producto_id)
+#         cantidad = int(request.POST.get('cantidad', 1))
+
+#         carrito, created = Carrito.objects.get_or_create(usuario=request.user)
+
+#         item, item_created = ItemCarrito.objects.get_or_create(
+#             carrito=carrito,
+#             producto=producto,
+#             defaults={'cantidad': cantidad}
+#         )
+
+#         if not item_created:
+#             item.cantidad += cantidad
+#             item.save()
+
+#         messages.success(request, 'Producto añadido al carrito.', extra_tags='header')
+#         return redirect(request.META.get('HTTP_REFERER', '/'))
+
 def agregar_al_carrito(request, producto_id):
     if request.method == 'POST':
         producto = get_object_or_404(Producto, id=producto_id)
         cantidad = int(request.POST.get('cantidad', 1))
 
+        # 1. Get or create the user's cart
         carrito, created = Carrito.objects.get_or_create(usuario=request.user)
 
+        # 2. Check if the product is already in the cart
         item, item_created = ItemCarrito.objects.get_or_create(
             carrito=carrito,
             producto=producto,
-            defaults={'cantidad': cantidad}
+            defaults={'cantidad': 0} # Set defaults to 0 to properly calculate total quantity
         )
 
-        if not item_created:
-            item.cantidad += cantidad
+        # 3. Calculate total requested quantity and check against stock
+        total_cantidad_solicitada = item.cantidad + cantidad
+        if total_cantidad_solicitada > producto.stock:
+            # Insufficient stock, display an error message
+            messages.error(request, f'No puedes agregar más de {producto.stock} unidades de este producto. Solo hay {producto.stock} en stock.', extra_tags='header')
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+        else:
+            # 4. Update the item quantity and save
+            item.cantidad = total_cantidad_solicitada
             item.save()
-
-        messages.success(request, 'Producto añadido al carrito.', extra_tags='header')
-        return redirect(request.META.get('HTTP_REFERER', '/'))
+            messages.success(request, 'Producto añadido al carrito.', extra_tags='header')
+            return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
 @login_required
-
 def vista_carrito(request):
     usuario = request.user
     carrito = Carrito.objects.filter(usuario=usuario).first()
@@ -473,6 +501,56 @@ def checkout(request):
     total = subtotal + envio
 
     if request.method == 'POST':
+
+        metodo_pago = request.POST.get('metodo_pago', 'credit_card')
+        
+        # Validación para el método de pago con tarjeta
+        if metodo_pago == 'tarjeta':
+            numero_tarjeta = request.POST.get('numero_tarjeta')
+            expiracion_tarjeta = request.POST.get('expiracion_tarjeta')
+            cvv_tarjeta = request.POST.get('cvv_tarjeta')
+            
+            # Validación: Número de tarjeta (solo 16 dígitos)
+            if not numero_tarjeta or not (numero_tarjeta.isdigit() and len(numero_tarjeta) == 16):
+                messages.error(request, 'El número de tarjeta no es válido.')
+                return redirect('checkout')
+
+            # Validación: CVV (solo 3 dígitos)
+            if not cvv_tarjeta or not (cvv_tarjeta.isdigit() and len(cvv_tarjeta) == 3):
+                messages.error(request, 'El CVV debe tener 3 dígitos.')
+                return redirect('checkout')
+                
+            # Validación: Fecha de expiración (MM/AA)
+            if not expiracion_tarjeta or len(expiracion_tarjeta) != 5:
+                messages.error(request, 'La fecha de expiración no es válida.')
+                return redirect('checkout')
+            
+            try:
+                mes, anio = map(int, expiracion_tarjeta.split('/'))
+                # Los dos últimos dígitos del año
+                anio_completo = 2000 + anio
+                
+                # Validar mes y año
+                if not (1 <= mes <= 12):
+                    messages.error(request, 'El mes de expiración no es válido.')
+                    return redirect('checkout')
+                
+                # Validar año: del 2018 al 2028
+                if not (2018 <= anio_completo <= 2040):
+                    messages.error(request, 'El año de expiración no es válido.')
+                    return redirect('checkout')
+
+                # Validar que la tarjeta no esté caducada
+                # hoy = datetime.now()
+                # if anio_completo < hoy.year or (anio_completo == hoy.year and mes < hoy.month):
+                #     messages.error(request, 'La tarjeta está caducada.')
+                #     return redirect('checkout')
+            
+            except (ValueError, IndexError):
+                messages.error(request, 'Formato de fecha de expiración inválido. Utiliza MM/AA.')
+                return redirect('checkout')
+
+        # Si todas las validaciones pasan, se procede con la creación de la orden
         usuario.nombre_envio = request.POST.get('nombre')
         usuario.direccion_envio = request.POST.get('direccion')
         usuario.telefono_envio = request.POST.get('telefono')
@@ -480,7 +558,6 @@ def checkout(request):
         usuario.codigo_postal_envio = request.POST.get('codigo_postal')
         usuario.save()
 
-        metodo_pago = request.POST.get('metodo_pago', 'credit_card')
         orden = Orden.objects.create(
             usuario=usuario,
             numero_orden=generar_numero_orden(),
@@ -490,6 +567,11 @@ def checkout(request):
             direccion_facturacion=usuario.direccion_envio,
             total=total
         )
+        
+        # Lógica para reducir el stock de productos
+        for item in carrito.items.all():
+            item.producto.stock -= item.cantidad
+            item.producto.save()
 
         ItemCarrito.objects.filter(carrito=carrito).delete()
         request.session['cantidades_temporales'] = {}
@@ -514,29 +596,49 @@ def actualizar_cantidad(request, item_id):
         try:
             item = ItemCarrito.objects.get(id=item_id, carrito__usuario=request.user)
             nueva_cantidad = int(request.POST.get('cantidad', 1))
+            
+            # 1. Validación de stock
+            if nueva_cantidad > item.producto.stock:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Solo hay {item.producto.stock} unidades de este producto en stock.',
+                    'stock_disponible': item.producto.stock
+                })
 
+            # 2. Si la validación es exitosa, actualiza la cantidad en la sesión
             if 'cantidades_temporales' not in request.session:
                 request.session['cantidades_temporales'] = {}
 
             request.session['cantidades_temporales'][str(item_id)] = nueva_cantidad
             request.session.modified = True
 
+            # 3. Recalcular subtotales y totales para la respuesta
             carrito = item.carrito
             items = ItemCarrito.objects.filter(carrito=carrito)
-            subtotal_total = 0
+            subtotal_total = Decimal('0.00')
+            es_usuario_miembro = request.user.es_premium() or request.user.es_miembro_educativo()
+            
             for i in items:
-                cantidad = request.session['cantidades_temporales'].get(str(i.id), i.cantidad)
-                subtotal_total += i.producto.precio * cantidad
+                cantidad_actualizada = request.session['cantidades_temporales'].get(str(i.id), i.cantidad)
+                precio_base = i.producto.precio
+                
+                precio_unitario = precio_base
+                if es_usuario_miembro and i.producto.descuento_para_miembros:
+                    porcentaje = i.producto.descuento_para_miembros / Decimal('100')
+                    precio_unitario = precio_base * (Decimal('1.00') - porcentaje)
+                
+                subtotal_total += precio_unitario * cantidad_actualizada
 
-            subtotal_item = item.producto.precio * nueva_cantidad
-            envio = 80
+            subtotal_item = precio_unitario * nueva_cantidad
+            
+            envio = Decimal('0.00') if es_usuario_miembro else Decimal('80.00')
             total = subtotal_total + envio
 
             return JsonResponse({
                 'success': True,
                 'nuevoSubtotal': f"${subtotal_item:.2f}",
                 'subtotalTotal': f"${subtotal_total:.2f}",
-                'total': f"${total:.2f}"
+                'total': f"${total:.2f}",
             })
 
         except Exception as e:
@@ -563,6 +665,50 @@ def checkout_membresia(request):
     if request.method == 'POST':
         with transaction.atomic():
             metodo_pago = request.POST.get('metodo_pago', 'credit_card')
+            if metodo_pago == 'tarjeta':
+                numero_tarjeta = request.POST.get('numero_tarjeta')
+                expiracion_tarjeta = request.POST.get('expiracion_tarjeta')
+                cvv_tarjeta = request.POST.get('cvv_tarjeta')
+            
+            # Validación: Número de tarjeta (solo 16 dígitos)
+            if not numero_tarjeta or not (numero_tarjeta.isdigit() and len(numero_tarjeta) == 16):
+                messages.error(request, 'El número de tarjeta no es válido.')
+                return redirect('checkout_membresia')
+
+            # Validación: CVV (solo 3 dígitos)
+            if not cvv_tarjeta or not (cvv_tarjeta.isdigit() and len(cvv_tarjeta) == 3):
+                messages.error(request, 'El CVV debe tener 3 dígitos.')
+                return redirect('checkout_membresia')
+                
+            # Validación: Fecha de expiración (MM/AA)
+            if not expiracion_tarjeta or len(expiracion_tarjeta) != 5:
+                messages.error(request, 'La fecha de expiración no es válida.')
+                return redirect('checkout_membresia')
+            
+            try:
+                mes, anio = map(int, expiracion_tarjeta.split('/'))
+                # Los dos últimos dígitos del año
+                anio_completo = 2000 + anio
+                
+                # Validar mes y año
+                if not (1 <= mes <= 12):
+                    messages.error(request, 'El mes de expiración no es válido.')
+                    return redirect('checkout_membresia')
+                
+                # Validar año: del 2018 al 2028
+                if not (2018 <= anio_completo <= 2028):
+                    messages.error(request, 'El año de expiración no es válido.')
+                    return redirect('checkout_membresia')
+
+                # Validar que la tarjeta no esté caducada
+                # hoy = datetime.today()
+                # if anio_completo < hoy.year or (anio_completo == hoy.year and mes < hoy.month):
+                #     messages.error(request, 'La tarjeta está caducada.')
+                #     return redirect('checkout_membresia')
+            
+            except (ValueError, IndexError):
+                messages.error(request, 'Formato de fecha de expiración inválido. Utiliza MM/AA.')
+                return redirect('checkout_membresia')
             
             orden = Orden.objects.create(
                 usuario=usuario,

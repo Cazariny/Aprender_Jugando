@@ -56,18 +56,4 @@
         </div>
     </div>
 </div>
-
-<div class="about-section">
-    <h2 class="about-title">Nuestro Equipo</h2>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px;">
-        {% for member in team_members %}
-        <div style="text-align: center;">
-            <div style="width: 150px; height: 150px; background: #f0f7ff; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 60px;">{{ member.emoji }}</div>
-            <h3 style="margin-bottom: 5px;">{{ member.name }}</h3>
-            <p style="color: #667eea; margin-bottom: 10px;">{{ member.position }}</p>
-            <p>{{ member.description }}</p>
-        </div>
-        {% endfor %}
-    </div>
-</div>
 {% endblock %}

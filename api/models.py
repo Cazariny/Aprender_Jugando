@@ -119,7 +119,7 @@ class ImagenProducto(models.Model):
         on_delete=models.CASCADE,
         related_name='imagenes'
     )
-    imagen = models.ImageField(upload_to='productos/')
+    imagen = models.ImageField(upload_to='media/productos/')
     es_principal = models.BooleanField(default=False)
     orden = models.PositiveIntegerField(default=0)
     
@@ -277,7 +277,7 @@ class BlogPost(models.Model):
     categoria = models.ManyToManyField(BlogCategory)
     contenido = models.TextField()
     imagen = models.ImageField(
-        upload_to='blog/',
+        upload_to='media/blog/',
         null=True,
         blank=True
     )
