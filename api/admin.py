@@ -35,9 +35,6 @@ class ProductoAdmin(admin.ModelAdmin):
     )
 
     def save_model(self, request, obj, form, change):
-        """
-        Completely defensive save handling with transaction management
-        """
         from django.db import transaction
         try:
             with transaction.atomic():

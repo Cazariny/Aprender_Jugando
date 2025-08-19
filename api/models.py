@@ -158,7 +158,6 @@ class Resena(models.Model):
         return f"Reseña de {self.usuario.username} para {self.producto.nombre}"
 
 class Carrito(models.Model):
-    """Carrito de compras de usuario"""
     usuario = models.OneToOneField(
         UsuarioPersonalizado,
         on_delete=models.CASCADE,
@@ -177,7 +176,6 @@ class Carrito(models.Model):
 
 
 class ItemCarrito(models.Model):
-    """Items individuales en el carrito de compras"""
     carrito = models.ForeignKey(
         Carrito,
         on_delete=models.CASCADE,
@@ -195,7 +193,6 @@ class ItemCarrito(models.Model):
         return self.producto.precio * self.cantidad
 
 class Orden(models.Model):
-    """Órdenes de compra completadas"""
     OPCIONES_ESTADO = [
         ('pending', 'Pendiente'),
         ('processing', 'Procesando'),
@@ -237,7 +234,6 @@ class Orden(models.Model):
         return self.numero_orden
 
 class ItemOrden(models.Model):
-    """Items individuales en una orden de compra"""
     orden = models.ForeignKey(
         Orden,
         on_delete=models.CASCADE,
@@ -252,7 +248,6 @@ class ItemOrden(models.Model):
         return self.precio * self.cantidad
 
 class MensajeContacto(models.Model):
-    """Mensajes del formulario de contacto"""
     nombre = models.CharField(max_length=100)
     email = models.EmailField()
     mensaje = models.TextField()

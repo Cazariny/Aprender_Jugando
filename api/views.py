@@ -16,26 +16,26 @@ from django.http import JsonResponse
 from django.db.models import Avg, Count, Value, IntegerField, FloatField
 import uuid
 from django.db.models import Sum
+from django.db import transaction
+
 
 
 def top10(request):
-    # Versión con debug incorporado
     productos = Producto.objects.filter(
         resenas__isnull=False,
         esta_activo=True
     ).annotate(
         promedio=Avg('resenas__calificacion'),
-        total_res=Count('resenas')
-    ).order_by('-promedio')[:10]
-    
-    # Debug en consola
-    print(f"Productos encontrados: {productos.count()}")
-    for p in productos:
-        print(f"{p.nombre}: {p.promedio} ({p.total_res} reseñas)")
+        total_resenas=Count('resenas')
+    ).filter(
+        total_resenas__gte=3 
+    ).order_by(
+        '-promedio', 
+        '-total_resenas'
+    )[:10]
     
     return render(request, 'productos/top10.html', {
         'productos': productos,
-        'rango_estrellas': range(1, 6)
     })
 
 def terminos_condiciones(request):
@@ -374,20 +374,18 @@ def vista_carrito(request):
             'total': 0
         })
 
-    # Obtener cantidades temporales de la sesión
     cantidades_temporales = request.session.get('cantidades_temporales', {})
     
     items = []
     subtotal = 0
     
     for item in ItemCarrito.objects.filter(carrito=carrito):
-        # Usar cantidad temporal si existe, de lo contrario usar la de la BD
         cantidad = cantidades_temporales.get(str(item.id), item.cantidad)
         precio_item = item.producto.precio * cantidad
         subtotal += precio_item
         
         items.append({
-            'item': item,  # Objeto completo de ItemCarrito
+            'item': item, 
             'producto': item.producto,
             'cantidad': cantidad,
             'precio_item': precio_item,
@@ -530,9 +528,6 @@ def confirmacion_compra(request, orden_id):
 
 def contacto(request):
     return render(request, "contacto/contacto.html")
-
-# ... (imports existentes)
-from django.db import transaction
 
 @login_required
 def checkout_membresia(request):
